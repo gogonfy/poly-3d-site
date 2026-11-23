@@ -1,9 +1,8 @@
 ﻿/* =========================================================
-   Background 3D scene — real extruded tool logos
-   Blender, Houdini, Cinema 4D, Three.js, Unity, Unreal.
-   Each logo is extruded from its vector path into 3D
-   geometry, lit with studio lights + reflections, and
-   floats / slowly spins in space.
+   Background 3D scene — a single large Blender logo,
+   extruded from its vector path into detailed 3D geometry,
+   surrounded by orbiting particles, brass rings and a
+   faint wireframe shell. Lit with studio lights + reflections.
    ========================================================= */
 
 (function () {
@@ -385,21 +384,16 @@
 
   group.add(makeGlow());
 
-  /* ---------- build extruded logos ---------- */
+  /* ---------- build extruded logo ---------- */
 
   const CONFIG = {
-    'Blender':    { size: 2.6,  radius: 2.0,  baseY: 1.1,  phase: 0.0 },
-    'Houdini':    { size: 1.8,  radius: 2.9,  baseY: 0.5,  phase: 1.05 },
-    'Cinema 4D':  { size: 1.65, radius: 2.55, baseY: -1.1, phase: 2.1 },
-    'Three.js':   { size: 1.5,  radius: 2.15, baseY: -1.6, phase: 3.15 },
-    'Unity':      { size: 1.7,  radius: 3.3,  baseY: -0.4, phase: 4.2 },
-    'Unreal':     { size: 1.85, radius: 1.65, baseY: 1.95, phase: 5.25 }
+    'Blender': { size: 4.0 }
   };
 
-  const DEPTH_WORLD = 0.32;
-  const BEVEL_WORLD = 0.05;
+  const DEPTH_WORLD = 0.42;
+  const BEVEL_WORLD = 0.06;
 
-  const logos = [];
+  let logoGroup = null;
 
   window.POLY_LOGOS.forEach(function (logo) {
     const cfg = CONFIG[logo.name];
@@ -423,18 +417,18 @@
     const centerX = (bounds.minX + bounds.maxX) / 2;
     const centerY = (bounds.minY + bounds.maxY) / 2;
 
-    const logoGroup = new THREE.Group();
+    logoGroup = new THREE.Group();
 
     const color = new THREE.Color(logo.color);
     const material = new THREE.MeshPhysicalMaterial({
       color: color,
       metalness: 0.45,
-      roughness: 0.3,
-      clearcoat: 0.65,
-      clearcoatRoughness: 0.25,
+      roughness: 0.28,
+      clearcoat: 0.7,
+      clearcoatRoughness: 0.2,
       envMapIntensity: 0.9,
       emissive: color,
-      emissiveIntensity: 0.12
+      emissiveIntensity: 0.16
     });
     if (environment) material.envMap = environment;
 
@@ -449,8 +443,8 @@
           bevelEnabled: true,
           bevelThickness: bevel,
           bevelSize: bevel,
-          bevelSegments: 3,
-          curveSegments: 32
+          bevelSegments: 5,
+          curveSegments: 48
         });
       } catch (err) {
         return;
@@ -461,25 +455,89 @@
       logoGroup.add(mesh);
     });
 
-    if (logoGroup.children.length === 0) return;
+    if (logoGroup.children.length === 0) { logoGroup = null; return; }
 
     logoGroup.scale.setScalar(scale);
     logoGroup.userData = {
-      name: logo.name,
-      radius: cfg.radius,
-      baseY: cfg.baseY,
-      angle: cfg.phase,
-      phase: cfg.phase,
-      orbitSpeed: 0.1 + Math.random() * 0.12,
-      spinSpeed: 0.22 + Math.random() * 0.22,
-      levSpeed: 0.4 + Math.random() * 0.3,
-      levAmp: 0.15 + Math.random() * 0.15,
-      tiltAmp: 0.12 + Math.random() * 0.1
+      spinSpeed: 0.3,
+      levSpeed: 0.5,
+      levAmp: 0.22,
+      tiltAmp: 0.14
     };
 
     group.add(logoGroup);
-    logos.push(logoGroup);
   });
+
+  /* ---------- particles ---------- */
+
+  const particleCount = window.innerWidth < 760 ? 180 : 460;
+  const particlePositions = new Float32Array(particleCount * 3);
+  const particleColors = new Float32Array(particleCount * 3);
+  const cWarm = new THREE.Color(0xd9a07e);
+  const cBrass = new THREE.Color(0xd3b98f);
+  const cBone = new THREE.Color(0xf3e7d6);
+  const cTeal = new THREE.Color(0x9db5a6);
+
+  for (let i = 0; i < particleCount; i++) {
+    const r = 2.3 + Math.random() * 2.3;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    particlePositions[i * 3] = Math.sin(phi) * Math.cos(theta) * r;
+    particlePositions[i * 3 + 1] = Math.cos(phi) * r * 0.85;
+    particlePositions[i * 3 + 2] = Math.sin(phi) * Math.sin(theta) * r;
+
+    const chance = Math.random();
+    const color = chance < 0.34 ? cWarm : chance < 0.6 ? cBrass : chance < 0.84 ? cBone : cTeal;
+    particleColors[i * 3] = color.r;
+    particleColors[i * 3 + 1] = color.g;
+    particleColors[i * 3 + 2] = color.b;
+  }
+
+  const particleGeometry = new THREE.BufferGeometry();
+  particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+  particleGeometry.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
+
+  const particles = new THREE.Points(
+    particleGeometry,
+    new THREE.PointsMaterial({
+      vertexColors: true,
+      size: 0.06,
+      transparent: true,
+      opacity: 0.6,
+      depthWrite: false,
+      sizeAttenuation: true
+    })
+  );
+  group.add(particles);
+
+  /* ---------- orbit rings + wireframe shell ---------- */
+
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: 0xd3b98f,
+    transparent: true,
+    opacity: 0.28,
+    depthWrite: false
+  });
+
+  const ring1 = new THREE.Mesh(new THREE.TorusGeometry(2.7, 0.012, 8, 160), ringMat);
+  ring1.rotation.set(1.2, 0.2, 0.4);
+  group.add(ring1);
+
+  const ring2 = new THREE.Mesh(new THREE.TorusGeometry(3.15, 0.008, 8, 160), ringMat);
+  ring2.rotation.set(-0.9, 0.55, -0.5);
+  group.add(ring2);
+
+  const shell = new THREE.Mesh(
+    new THREE.IcosahedronGeometry(3.4, 1),
+    new THREE.MeshBasicMaterial({
+      color: 0xb08a52,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.05,
+      depthWrite: false
+    })
+  );
+  group.add(shell);
 
   /* ---------- lights ---------- */
 
@@ -516,8 +574,8 @@
 
   function baseX() {
     if (window.innerWidth < 760) return 1.4;
-    if (window.innerWidth < 1200) return 3.1;
-    return 3.3;
+    if (window.innerWidth < 1200) return 2.8;
+    return 3.0;
   }
   function baseY() {
     if (window.innerWidth < 760) return 0.9;
@@ -568,27 +626,23 @@
     camera.position.z = baseCameraZ() + scrollSmooth * 1.1;
     camera.lookAt(0, 0, 0);
 
-    for (let i = 0; i < logos.length; i++) {
-      const logo = logos[i];
-      const u = logo.userData;
-
+    if (logoGroup) {
+      const u = logoGroup.userData;
+      logoGroup.position.y = reduceMotion ? 0 : Math.sin(t * u.levSpeed) * u.levAmp;
       if (!reduceMotion) {
-        u.angle += dt * u.orbitSpeed;
+        logoGroup.rotation.y = Math.sin(t * 0.35) * 0.5;
+        logoGroup.rotation.x = Math.sin(t * 0.3) * 0.12;
+        logoGroup.rotation.z = Math.cos(t * 0.25) * 0.08;
       }
+    }
 
-      const orbitX = Math.cos(u.angle) * u.radius * 0.7;
-      const orbitZ = Math.sin(u.angle) * u.radius * 0.8;
-      logo.position.x = orbitX + (reduceMotion ? 0 : smoothX * (0.1 + u.radius * 0.06));
-      logo.position.z = orbitZ;
-      logo.position.y = u.baseY
-        + (reduceMotion ? 0 : Math.sin(t * u.levSpeed + u.phase) * u.levAmp)
-        + (reduceMotion ? 0 : smoothY * (0.08 + u.radius * 0.05));
-
-      if (!reduceMotion) {
-        logo.rotation.y = t * u.spinSpeed;
-        logo.rotation.x = Math.sin(t * 0.4 + u.phase) * u.tiltAmp;
-        logo.rotation.z = Math.cos(t * 0.3 + u.phase) * u.tiltAmp;
-      }
+    if (!reduceMotion) {
+      particles.rotation.y += dt * 0.06;
+      particles.rotation.x = Math.sin(t * 0.1) * 0.06;
+      ring1.rotation.z += dt * 0.1;
+      ring2.rotation.z -= dt * 0.07;
+      shell.rotation.y -= dt * 0.03;
+      shell.rotation.x = Math.sin(t * 0.08) * 0.1;
     }
 
     renderer.render(scene, camera);
