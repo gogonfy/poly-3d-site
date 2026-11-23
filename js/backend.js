@@ -230,6 +230,8 @@
 
   function openStats() {
     if (!dialog || dialog.open) return;
+    const navToggle = document.querySelector('.nav-toggle');
+    if (navToggle && document.body.classList.contains('nav-open')) navToggle.click();
     if (typeof dialog.showModal === 'function') dialog.showModal();
     else dialog.setAttribute('open', '');
     document.body.classList.add('dialog-open');
