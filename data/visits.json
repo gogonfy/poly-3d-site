@@ -1,5 +1,8 @@
-﻿{
-  "count": 0,
-  "visitors": [],
-  "updatedAt": null
+{
+  "count": 2,
+  "visitors": [
+    "4446c014-9d12-4fb0-943a-232883efc1d5",
+    "b708e5e1-9193-4919-8450-c4f4787dfbed"
+  ],
+  "updatedAt": "2026-11-23T15:51:06.839Z"
 }
