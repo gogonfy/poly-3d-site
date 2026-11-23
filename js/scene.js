@@ -1,8 +1,10 @@
 ﻿/* =========================================================
    Background 3D scene — a single large Blender logo,
-   extruded from its vector path into detailed 3D geometry,
-   surrounded by orbiting particles, brass rings and a
-   faint wireframe shell. Lit with studio lights + reflections.
+   extruded from its vector path into detailed 3D geometry.
+   Around it: a slow dust cloud, an orbital spark band,
+   fast flying embers with streak accents, tumbling brass
+   shards, two orbit rings and a faint wireframe shell.
+   Lit with studio lights + reflections.
    ========================================================= */
 
 (function () {
@@ -375,19 +377,20 @@
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, 256, 256);
     const tex = new THREE.CanvasTexture(c);
-    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: 0.5, depthWrite: false });
+    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: 0.55, depthWrite: false });
     const sprite = new THREE.Sprite(mat);
-    sprite.scale.setScalar(10);
+    sprite.scale.setScalar(15);
     sprite.position.z = -1.5;
     return sprite;
   }
 
-  group.add(makeGlow());
+  const glow = makeGlow();
+  group.add(glow);
 
   /* ---------- build extruded logo ---------- */
 
   const CONFIG = {
-    'Blender': { size: 4.0 }
+    'Blender': { size: 6.0 }
   };
 
   const DEPTH_WORLD = 0.42;
@@ -468,26 +471,59 @@
     group.add(logoGroup);
   });
 
-  /* ---------- particles ---------- */
+  /* ---------- particle fields ---------- */
 
-  const particleCount = window.innerWidth < 760 ? 180 : 460;
+  const isMobile = window.innerWidth < 760;
+
+  function makeDotTexture() {
+    const c = document.createElement('canvas');
+    c.width = c.height = 64;
+    const ctx = c.getContext('2d');
+    const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.58, 'rgba(255,255,255,1)');
+    g.addColorStop(0.8, 'rgba(255,255,255,0.35)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 64, 64);
+    const tex = new THREE.CanvasTexture(c);
+    tex.encoding = THREE.sRGBEncoding;
+    return tex;
+  }
+
+  const dotTexture = makeDotTexture();
+
+  const particlePalette = [
+    { color: new THREE.Color(0x1c372b).convertSRGBToLinear(), weight: 0.2 },
+    { color: new THREE.Color(0x2a4c3c).convertSRGBToLinear(), weight: 0.26 },
+    { color: new THREE.Color(0x0f7a52).convertSRGBToLinear(), weight: 0.3 },
+    { color: new THREE.Color(0x11966a).convertSRGBToLinear(), weight: 0.16 },
+    { color: new THREE.Color(0x2fae75).convertSRGBToLinear(), weight: 0.08 }
+  ];
+
+  function pickParticleColor() {
+    let r = Math.random();
+    for (let i = 0; i < particlePalette.length; i++) {
+      r -= particlePalette[i].weight;
+      if (r <= 0) return particlePalette[i].color;
+    }
+    return particlePalette[0].color;
+  }
+
+  /* slow dust cloud */
+  const particleCount = isMobile ? 170 : 400;
   const particlePositions = new Float32Array(particleCount * 3);
   const particleColors = new Float32Array(particleCount * 3);
-  const cWarm = new THREE.Color(0xd9a07e);
-  const cBrass = new THREE.Color(0xd3b98f);
-  const cBone = new THREE.Color(0xf3e7d6);
-  const cTeal = new THREE.Color(0x9db5a6);
 
   for (let i = 0; i < particleCount; i++) {
-    const r = 2.3 + Math.random() * 2.3;
+    const r = 3.2 + Math.random() * 2.4;
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
     particlePositions[i * 3] = Math.sin(phi) * Math.cos(theta) * r;
-    particlePositions[i * 3 + 1] = Math.cos(phi) * r * 0.85;
+    particlePositions[i * 3 + 1] = Math.cos(phi) * r * 0.9;
     particlePositions[i * 3 + 2] = Math.sin(phi) * Math.sin(theta) * r;
 
-    const chance = Math.random();
-    const color = chance < 0.34 ? cWarm : chance < 0.6 ? cBrass : chance < 0.84 ? cBone : cTeal;
+    const color = pickParticleColor();
     particleColors[i * 3] = color.r;
     particleColors[i * 3 + 1] = color.g;
     particleColors[i * 3 + 2] = color.b;
@@ -500,40 +536,215 @@
   const particles = new THREE.Points(
     particleGeometry,
     new THREE.PointsMaterial({
+      map: dotTexture,
       vertexColors: true,
-      size: 0.06,
+      size: isMobile ? 0.21 : 0.15,
       transparent: true,
-      opacity: 0.6,
+      opacity: 0.92,
       depthWrite: false,
       sizeAttenuation: true
     })
   );
+  particles.frustumCulled = false;
   group.add(particles);
+
+  /* orbital spark band */
+  const bandCount = isMobile ? 36 : 84;
+  const bandPositions = new Float32Array(bandCount * 3);
+  const bandColors = new Float32Array(bandCount * 3);
+
+  for (let i = 0; i < bandCount; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const radius = 3.7 + Math.random() * 0.8;
+    bandPositions[i * 3] = Math.cos(angle) * radius;
+    bandPositions[i * 3 + 1] = (Math.random() - 0.5) * 0.16;
+    bandPositions[i * 3 + 2] = Math.sin(angle) * radius;
+
+    const color = Math.random() < 0.55 ? particlePalette[2].color : particlePalette[4].color;
+    bandColors[i * 3] = color.r;
+    bandColors[i * 3 + 1] = color.g;
+    bandColors[i * 3 + 2] = color.b;
+  }
+
+  const bandGeometry = new THREE.BufferGeometry();
+  bandGeometry.setAttribute('position', new THREE.BufferAttribute(bandPositions, 3));
+  bandGeometry.setAttribute('color', new THREE.BufferAttribute(bandColors, 3));
+
+  const band = new THREE.Points(
+    bandGeometry,
+    new THREE.PointsMaterial({
+      map: dotTexture,
+      vertexColors: true,
+      size: isMobile ? 0.13 : 0.09,
+      transparent: true,
+      opacity: 0.85,
+      depthWrite: false,
+      sizeAttenuation: true
+    })
+  );
+  band.frustumCulled = false;
+
+  const bandGroup = new THREE.Group();
+  bandGroup.rotation.set(0.95, 0.15, 0.32);
+  bandGroup.add(band);
+  group.add(bandGroup);
+
+  /* fast flying embers (individual orbits) */
+  const emberCount = isMobile ? 52 : 120;
+  const emberPositions = new Float32Array(emberCount * 3);
+  const emberColors = new Float32Array(emberCount * 3);
+  const embersData = [];
+
+  for (let i = 0; i < emberCount; i++) {
+    const radius = 3.6 + Math.random() * 2.2;
+    const angle = Math.random() * Math.PI * 2;
+    const height = (Math.random() - 0.5) * 5.6;
+    const orbitSpeed = (0.16 + Math.random() * 0.38) * (Math.random() < 0.16 ? -1 : 1);
+    const bobAmp = 0.2 + Math.random() * 0.55;
+    const bobSpeed = 0.5 + Math.random() * 1.0;
+    const phase = Math.random() * Math.PI * 2;
+    embersData.push({ radius, angle, height, orbitSpeed, bobAmp, bobSpeed, phase });
+
+    emberPositions[i * 3] = Math.cos(angle) * radius;
+    emberPositions[i * 3 + 1] = height;
+    emberPositions[i * 3 + 2] = Math.sin(angle) * radius * 0.84;
+
+    const color = pickParticleColor();
+    emberColors[i * 3] = color.r;
+    emberColors[i * 3 + 1] = color.g;
+    emberColors[i * 3 + 2] = color.b;
+  }
+
+  const emberGeometry = new THREE.BufferGeometry();
+  emberGeometry.setAttribute('position', new THREE.BufferAttribute(emberPositions, 3));
+  emberGeometry.setAttribute('color', new THREE.BufferAttribute(emberColors, 3));
+
+  const embers = new THREE.Points(
+    emberGeometry,
+    new THREE.PointsMaterial({
+      map: dotTexture,
+      vertexColors: true,
+      size: isMobile ? 0.28 : 0.21,
+      transparent: true,
+      opacity: 1,
+      depthWrite: false,
+      sizeAttenuation: true
+    })
+  );
+  embers.frustumCulled = false;
+  group.add(embers);
+
+  /* thin speed streaks */
+  const streakCount = isMobile ? 24 : 52;
+  const streakPositions = new Float32Array(streakCount * 6);
+
+  for (let i = 0; i < streakCount; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const radius = 3.9 + Math.random() * 1.8;
+    const y = (Math.random() - 0.5) * 5.2;
+    const length = 0.2 + Math.random() * 0.4;
+    const o = i * 6;
+    streakPositions[o] = Math.cos(angle) * radius;
+    streakPositions[o + 1] = y;
+    streakPositions[o + 2] = Math.sin(angle) * radius * 0.84;
+    streakPositions[o + 3] = streakPositions[o] - Math.sin(angle) * length;
+    streakPositions[o + 4] = y + (Math.random() - 0.5) * 0.06;
+    streakPositions[o + 5] = streakPositions[o + 2] + Math.cos(angle) * length * 0.84;
+  }
+
+  const streakGeometry = new THREE.BufferGeometry();
+  streakGeometry.setAttribute('position', new THREE.BufferAttribute(streakPositions, 3));
+
+  const streakColor = new THREE.Color(0x15573a).convertSRGBToLinear();
+  const streaks = new THREE.LineSegments(
+    streakGeometry,
+    new THREE.LineBasicMaterial({
+      color: streakColor,
+      transparent: true,
+      opacity: 0.6,
+      depthWrite: false
+    })
+  );
+  streaks.frustumCulled = false;
+  group.add(streaks);
+
+  /* tumbling brass shards */
+  const shardCount = isMobile ? 4 : 8;
+  const shardGeometry = new THREE.OctahedronGeometry(1, 0);
+  const shardColor = new THREE.Color(0x15573a).convertSRGBToLinear();
+  const shardEmissive = new THREE.Color(0x0a2a1d).convertSRGBToLinear();
+  const shardMaterial = new THREE.MeshPhysicalMaterial({
+    color: shardColor,
+    metalness: 0.55,
+    roughness: 0.4,
+    clearcoat: 0.4,
+    clearcoatRoughness: 0.3,
+    emissive: shardEmissive,
+    emissiveIntensity: 0.3
+  });
+  if (environment) shardMaterial.envMap = environment;
+
+  const shards = [];
+  for (let i = 0; i < shardCount; i++) {
+    const mesh = new THREE.Mesh(shardGeometry, shardMaterial);
+    const data = {
+      radius: 4.0 + Math.random() * 1.7,
+      angle: Math.random() * Math.PI * 2,
+      height: (Math.random() - 0.5) * 4.8,
+      orbitSpeed: (0.08 + Math.random() * 0.18) * (Math.random() < 0.2 ? -1 : 1),
+      bobAmp: 0.15 + Math.random() * 0.3,
+      bobSpeed: 0.4 + Math.random() * 0.6,
+      phase: Math.random() * Math.PI * 2,
+      spin: 0.4 + Math.random() * 0.8
+    };
+    mesh.userData = data;
+    mesh.scale.setScalar(0.07 + Math.random() * 0.1);
+    mesh.position.set(
+      Math.cos(data.angle) * data.radius,
+      data.height,
+      Math.sin(data.angle) * data.radius * 0.84
+    );
+    mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+    shards.push(mesh);
+    group.add(mesh);
+  }
 
   /* ---------- orbit rings + wireframe shell ---------- */
 
   const ringMat = new THREE.MeshBasicMaterial({
     color: 0xd3b98f,
     transparent: true,
-    opacity: 0.28,
+    opacity: 0.4,
     depthWrite: false
   });
 
-  const ring1 = new THREE.Mesh(new THREE.TorusGeometry(2.7, 0.012, 8, 160), ringMat);
+  const ring1 = new THREE.Mesh(new THREE.TorusGeometry(4.05, 0.014, 8, 180), ringMat);
   ring1.rotation.set(1.2, 0.2, 0.4);
   group.add(ring1);
 
-  const ring2 = new THREE.Mesh(new THREE.TorusGeometry(3.15, 0.008, 8, 160), ringMat);
+  const ring2 = new THREE.Mesh(new THREE.TorusGeometry(4.7, 0.01, 8, 180), ringMat);
   ring2.rotation.set(-0.9, 0.55, -0.5);
   group.add(ring2);
 
+  const ring3 = new THREE.Mesh(
+    new THREE.TorusGeometry(5.35, 0.007, 8, 200),
+    new THREE.MeshBasicMaterial({
+      color: 0xb97a46,
+      transparent: true,
+      opacity: 0.2,
+      depthWrite: false
+    })
+  );
+  ring3.rotation.set(0.35, -0.45, 1.0);
+  group.add(ring3);
+
   const shell = new THREE.Mesh(
-    new THREE.IcosahedronGeometry(3.4, 1),
+    new THREE.IcosahedronGeometry(5.15, 1),
     new THREE.MeshBasicMaterial({
       color: 0xb08a52,
       wireframe: true,
       transparent: true,
-      opacity: 0.05,
+      opacity: 0.06,
       depthWrite: false
     })
   );
@@ -572,20 +783,70 @@
 
   const clock = new THREE.Clock();
 
+  let layoutX = 0;
+  let layoutScale = 1;
+
+  function computeLayoutX() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const halfW = Math.tan((camera.fov * Math.PI) / 360) * baseCameraZ() * (w / h);
+    const rawScale = baseScaleRaw();
+
+    if (w < 1100) {
+      layoutScale = rawScale;
+      const logoHalfFrac = (3.0 * rawScale) / (2 * halfW);
+      let centerFrac;
+      if (w < 760) {
+        centerFrac = 0.7;
+      } else {
+        const panel = document.querySelector('.hero-panel');
+        centerFrac = panel ? panel.getBoundingClientRect().right / w + 0.02 + logoHalfFrac : 0.78;
+        centerFrac = Math.max(centerFrac, 0.78);
+      }
+      centerFrac = Math.min(centerFrac, 0.965 - logoHalfFrac);
+      layoutX = (centerFrac * 2 - 1) * halfW;
+      return;
+    }
+
+    const panel = document.querySelector('.hero-panel');
+    const panelRight = panel ? panel.getBoundingClientRect().right : w * 0.45;
+    const gap = Math.max(20, Math.round(w * 0.02));
+    const railReserve = w >= 2000 ? 220 : (w >= 1200 ? 135 : 30);
+    const safeRight = w - railReserve;
+    const pxPerWorld = w / (2 * halfW);
+
+    let scale = rawScale;
+    let logoPx = 6.0 * scale * pxPerWorld;
+    const available = safeRight - panelRight - gap;
+    if (available > 80 && logoPx > available) {
+      scale *= (available / logoPx) * 0.98;
+      logoPx = 6.0 * scale * pxPerWorld;
+    }
+    layoutScale = scale;
+
+    let centerPx = safeRight - logoPx / 2;
+    const minCenter = panelRight + gap + logoPx / 2;
+    if (centerPx < minCenter) centerPx = minCenter;
+    centerPx = Math.min(centerPx, w - 8 - logoPx / 2);
+    layoutX = ((centerPx / w) * 2 - 1) * halfW;
+  }
+
   function baseX() {
-    if (window.innerWidth < 760) return 1.4;
-    if (window.innerWidth < 1200) return 2.8;
-    return 3.0;
+    return layoutX;
   }
   function baseY() {
     if (window.innerWidth < 760) return 0.9;
     if (window.innerWidth < 1200) return 0.15;
     return 0;
   }
+  function baseScaleRaw() {
+    if (window.innerWidth < 760) return 0.5;
+    if (window.innerWidth < 1000) return 0.6;
+    if (window.innerWidth < 1200) return 0.68;
+    return 1.1;
+  }
   function baseScale() {
-    if (window.innerWidth < 760) return 0.6;
-    if (window.innerWidth < 1200) return 0.85;
-    return 1.0;
+    return layoutScale;
   }
   function baseCameraZ() {
     if (window.innerWidth < 760) return 15;
@@ -607,6 +868,7 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, w < 760 ? 1.5 : 2));
     renderer.setSize(w, h);
     updateScroll();
+    computeLayoutX();
   }
 
   function renderFrame() {
@@ -637,12 +899,45 @@
     }
 
     if (!reduceMotion) {
-      particles.rotation.y += dt * 0.06;
-      particles.rotation.x = Math.sin(t * 0.1) * 0.06;
+      particles.rotation.y += dt * 0.09;
+      particles.rotation.x = Math.sin(t * 0.1) * 0.07;
+
+      band.rotation.y += dt * 0.24;
+      bandGroup.rotation.z = 0.32 + Math.sin(t * 0.22) * 0.05;
+
+      for (let i = 0; i < embersData.length; i++) {
+        const d = embersData[i];
+        d.angle += dt * d.orbitSpeed;
+        const o = i * 3;
+        emberPositions[o] = Math.cos(d.angle) * d.radius;
+        emberPositions[o + 1] = d.height + Math.sin(t * d.bobSpeed + d.phase) * d.bobAmp;
+        emberPositions[o + 2] = Math.sin(d.angle) * d.radius * 0.84;
+      }
+      emberGeometry.attributes.position.needsUpdate = true;
+      embers.material.opacity = 0.88 + Math.sin(t * 1.6) * 0.12;
+
+      streaks.rotation.y -= dt * 0.18;
+      streaks.rotation.x = Math.sin(t * 0.14) * 0.08;
+
+      for (let i = 0; i < shards.length; i++) {
+        const s = shards[i];
+        const d = s.userData;
+        d.angle += dt * d.orbitSpeed;
+        s.position.x = Math.cos(d.angle) * d.radius;
+        s.position.y = d.height + Math.sin(t * d.bobSpeed + d.phase) * d.bobAmp;
+        s.position.z = Math.sin(d.angle) * d.radius * 0.84;
+        s.rotation.x += dt * d.spin;
+        s.rotation.y += dt * d.spin * 0.83;
+        s.rotation.z += dt * d.spin * 0.41;
+      }
+
       ring1.rotation.z += dt * 0.1;
       ring2.rotation.z -= dt * 0.07;
+      ring3.rotation.z += dt * 0.045;
       shell.rotation.y -= dt * 0.03;
       shell.rotation.x = Math.sin(t * 0.08) * 0.1;
+
+      glow.material.opacity = 0.55 + Math.sin(t * 0.9) * 0.06;
     }
 
     renderer.render(scene, camera);
