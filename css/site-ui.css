@@ -422,7 +422,6 @@ body.preloading {
 }
 
 .course-card:hover {
-  translate: 0 -4px;
   box-shadow: 0 34px 64px -38px rgba(27, 24, 20, 0.38);
 }
 

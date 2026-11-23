@@ -2865,7 +2865,6 @@ body.is-loaded .hero-line > span {
   .step:not(.step-accent):hover,
   .tool-card:hover,
   .future-card:hover {
-    transform: translateY(-4px);
     border-color: rgba(255, 106, 26, 0.28);
     box-shadow: 0 28px 54px -30px rgba(224, 78, 0, 0.45), inset 0 1px 0 #fff;
   }
@@ -2875,7 +2874,6 @@ body.is-loaded .hero-line > span {
   }
 
   .step-accent:hover {
-    transform: translateY(-4px);
     box-shadow: 0 34px 64px -30px rgba(224, 78, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.3);
   }
 
@@ -4232,6 +4230,7 @@ body.is-loaded .hero-line > span {
 /* ---------- clickable cards + card dialog ---------- */
 
 .card-interactive {
+  position: relative;
   cursor: pointer;
   transition: transform 300ms var(--ease-out), box-shadow 300ms ease, border-color 300ms ease;
 }
@@ -4285,7 +4284,6 @@ body.is-loaded .hero-line > span {
 
 @media (hover: hover) and (pointer: fine) {
   .card-interactive:not(.step-accent):hover {
-    transform: translateY(-4px);
     border-color: rgba(15, 143, 114, 0.28);
     box-shadow: 0 28px 54px -30px rgba(10, 107, 86, 0.4), inset 0 1px 0 #fff;
   }
