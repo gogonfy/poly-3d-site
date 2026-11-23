@@ -1,6 +1,8 @@
 ﻿/* =========================================================
-   Background 3D scene вЂ” rotation is driven by page scroll
-   Author: Arseniy Socolov
+   Background 3D scene — floating tool logos
+   Blender, Houdini, Cinema 4D, Three.js, Unity, Unreal:
+   levitating cards that slowly orbit and sway in 3D,
+   with subtle pointer / scroll parallax.
    ========================================================= */
 
 (function () {
@@ -26,246 +28,86 @@
   }
 
   renderer.outputEncoding = THREE.sRGBEncoding;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.8;
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
-  camera.position.set(0, 0, 9.6);
+  camera.position.set(0, 0, 12);
 
   const group = new THREE.Group();
   scene.add(group);
 
-  /* ---------- environment for glossy reflections ---------- */
-
-  function makeEnvironment() {
-    const c = document.createElement('canvas');
-    c.width = 1024;
-    c.height = 512;
-    const ctx = c.getContext('2d');
-
-    const base = ctx.createLinearGradient(0, 0, 0, 512);
-    base.addColorStop(0, '#fbf7ef');
-    base.addColorStop(0.42, '#eadccb');
-    base.addColorStop(0.7, '#b98a64');
-    base.addColorStop(1, '#3b2a22');
-    ctx.fillStyle = base;
-    ctx.fillRect(0, 0, 1024, 512);
-
-    const sun = ctx.createRadialGradient(300, 120, 0, 300, 120, 230);
-    sun.addColorStop(0, 'rgba(255,255,255,1)');
-    sun.addColorStop(0.25, 'rgba(255,255,255,0.65)');
-    sun.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = sun;
-    ctx.fillRect(0, 0, 1024, 512);
-
-    const warm = ctx.createRadialGradient(820, 360, 0, 820, 360, 280);
-    warm.addColorStop(0, 'rgba(176,86,57,0.55)');
-    warm.addColorStop(1, 'rgba(176,86,57,0)');
-    ctx.fillStyle = warm;
-    ctx.fillRect(0, 0, 1024, 512);
-
-    const cool = ctx.createRadialGradient(190, 400, 0, 190, 400, 280);
-    cool.addColorStop(0, 'rgba(42,76,60,0.34)');
-    cool.addColorStop(0.55, 'rgba(42,76,60,0.1)');
-    cool.addColorStop(1, 'rgba(42,76,60,0)');
-    ctx.fillStyle = cool;
-    ctx.fillRect(0, 0, 1024, 512);
-
-    const tex = new THREE.CanvasTexture(c);
-    tex.encoding = THREE.sRGBEncoding;
-    tex.mapping = THREE.EquirectangularReflectionMapping;
-
-    const pmrem = new THREE.PMREMGenerator(renderer);
-    pmrem.compileEquirectangularShader();
-    const env = pmrem.fromEquirectangular(tex).texture;
-    tex.dispose();
-    pmrem.dispose();
-    return env;
-  }
-
-  try {
-    scene.environment = makeEnvironment();
-  } catch (err) {
-    /* environment is a nice-to-have */
-  }
-
-  /* ---------- materials ---------- */
-
-  const orangeMat = new THREE.MeshPhysicalMaterial({
-    color: 0x8f432b,
-    metalness: 0.18,
-    roughness: 0.33,
-    clearcoat: 0.5,
-    clearcoatRoughness: 0.22,
-    envMapIntensity: 0.5,
-    emissive: 0x180704,
-    emissiveIntensity: 0.12
-  });
-
-  const whiteMat = new THREE.MeshPhysicalMaterial({
-    color: 0xf0e6d6,
-    metalness: 0.06,
-    roughness: 0.36,
-    clearcoat: 0.5,
-    clearcoatRoughness: 0.24,
-    envMapIntensity: 0.5
-  });
-
-  const tealMat = new THREE.MeshPhysicalMaterial({
-    color: 0x2a4c3c,
-    metalness: 0.12,
-    roughness: 0.38,
-    clearcoat: 0.4,
-    clearcoatRoughness: 0.24,
-    envMapIntensity: 0.45,
-    emissive: 0x06120d,
-    emissiveIntensity: 0.12
-  });
-
-  const figureMat = new THREE.MeshPhysicalMaterial({
-    color: 0x7c3827,
-    metalness: 0.22,
-    roughness: 0.29,
-    clearcoat: 0.58,
-    clearcoatRoughness: 0.2,
-    envMapIntensity: 0.55,
-    emissive: 0x130604,
-    emissiveIntensity: 0.12
-  });
-
-  const wireMat = new THREE.MeshBasicMaterial({
-    color: 0xb08a52,
-    wireframe: true,
-    transparent: true,
-    opacity: 0.09,
-    depthWrite: false
-  });
-
-  const ringMat = new THREE.MeshBasicMaterial({
-    color: 0xb08a52,
-    transparent: true,
-    opacity: 0.34,
-    depthWrite: false
-  });
-
-  /* ---------- main object ---------- */
-
-  const knot = new THREE.Mesh(new THREE.TorusKnotGeometry(1.32, 0.4, 230, 34, 2, 3), figureMat);
-  group.add(knot);
-
-  const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.42, 1), whiteMat);
-  group.add(core);
-
-  const shell = new THREE.Mesh(new THREE.IcosahedronGeometry(2.7, 1), wireMat);
-  group.add(shell);
-
-  const orbitRing = new THREE.Mesh(new THREE.TorusGeometry(2.12, 0.016, 8, 180), ringMat);
-  orbitRing.rotation.set(1.24, 0.2, 0.36);
-  group.add(orbitRing);
-
-  const orbitRing2 = new THREE.Mesh(new THREE.TorusGeometry(2.58, 0.009, 8, 180), ringMat);
-  orbitRing2.rotation.set(-0.88, 0.6, -0.42);
-  group.add(orbitRing2);
-
-  const coreLight = new THREE.PointLight(0xffd9bd, 0.5, 5.5);
-  group.add(coreLight);
-
-  /* ---------- orbiting shards ---------- */
-
-  const shardGeometries = [
-    new THREE.TetrahedronGeometry(0.17),
-    new THREE.OctahedronGeometry(0.14),
-    new THREE.IcosahedronGeometry(0.12),
-    new THREE.BoxGeometry(0.19, 0.19, 0.19)
+  /* Each logo orbits an elliptical ring around the cluster centre. */
+  const TOOLS = [
+    { file: 'assets/tools/blender.svg',      radius: 1.35, baseY: 1.05, scale: 1.15, phase: 0.0 },
+    { file: 'assets/tools/houdini.svg',      radius: 2.05, baseY: 0.45, scale: 0.95, phase: 1.05 },
+    { file: 'assets/tools/cinema4d.svg',     radius: 1.85, baseY: -0.95, scale: 0.9, phase: 2.1 },
+    { file: 'assets/tools/threedotjs.svg',   radius: 1.55, baseY: -1.45, scale: 0.85, phase: 3.15 },
+    { file: 'assets/tools/unity.svg',        radius: 2.35, baseY: -0.35, scale: 0.9, phase: 4.2 },
+    { file: 'assets/tools/unrealengine.svg', radius: 1.25, baseY: 1.75, scale: 0.9, phase: 5.25 }
   ];
 
-  const shards = [];
-  const shardCount = 12;
+  const cards = [];
 
-  for (let i = 0; i < shardCount; i++) {
-    const geo = shardGeometries[i % shardGeometries.length];
-    const palette = [whiteMat, orangeMat, orangeMat, tealMat, orangeMat];
-    const mesh = new THREE.Mesh(geo, palette[i % palette.length]);
-    const angle = (i / shardCount) * Math.PI * 2;
-    const radius = 2.05 + Math.random() * 1.05;
+  function loadLogo(file) {
+    return new Promise(function (resolve) {
+      const img = new Image();
+      img.onload = function () {
+        try {
+          const size = 256;
+          const pad = 22;
+          const c = document.createElement('canvas');
+          c.width = size;
+          c.height = size;
+          const ctx = c.getContext('2d');
+          ctx.drawImage(img, pad, pad, size - pad * 2, size - pad * 2);
 
-    mesh.position.set(Math.cos(angle) * radius, (Math.random() - 0.5) * 2.4, Math.sin(angle) * radius);
-    mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
-    mesh.userData.angle = angle;
-    mesh.userData.radius = radius;
-    mesh.userData.baseY = mesh.position.y;
-    mesh.userData.speed = 0.05 + Math.random() * 0.07;
-    mesh.userData.spinX = 0.25 + Math.random() * 0.6;
-    mesh.userData.spinY = 0.2 + Math.random() * 0.5;
-
-    group.add(mesh);
-    shards.push(mesh);
+          const tex = new THREE.CanvasTexture(c);
+          tex.encoding = THREE.sRGBEncoding;
+          tex.anisotropy = 4;
+          tex.minFilter = THREE.LinearFilter;
+          resolve(tex);
+        } catch (err) {
+          resolve(null);
+        }
+      };
+      img.onerror = function () { resolve(null); };
+      img.src = file;
+    });
   }
 
-  /* ---------- particles ---------- */
+  Promise.all(TOOLS.map(function (tool) { return loadLogo(tool.file); })).then(function (textures) {
+    TOOLS.forEach(function (tool, index) {
+      const tex = textures[index];
+      if (!tex) return;
 
-  const particleCount = window.innerWidth < 760 ? 120 : 280;
-  const particlePositions = new Float32Array(particleCount * 3);
-  const particleColors = new Float32Array(particleCount * 3);
-  const warmParticle = new THREE.Color(0xc98b68);
-  const coolParticle = new THREE.Color(0x6f8c7c);
-  const paleParticle = new THREE.Color(0xf0e4d2);
+      const geo = new THREE.PlaneGeometry(1.5 * tool.scale, 1.5 * tool.scale);
+      const mat = new THREE.MeshBasicMaterial({
+        map: tex,
+        transparent: true,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+        opacity: 0.96
+      });
+      const mesh = new THREE.Mesh(geo, mat);
 
-  for (let i = 0; i < particleCount; i++) {
-    const radius = 3.4 + Math.random() * 4.6;
-    const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos(2 * Math.random() - 1);
-    particlePositions[i * 3] = Math.sin(phi) * Math.cos(theta) * radius;
-    particlePositions[i * 3 + 1] = Math.cos(phi) * radius * 0.7;
-    particlePositions[i * 3 + 2] = Math.sin(phi) * Math.sin(theta) * radius;
+      mesh.userData = {
+        radius: tool.radius,
+        baseY: tool.baseY,
+        angle: tool.phase,
+        phase: tool.phase,
+        orbitSpeed: 0.12 + Math.random() * 0.1,
+        levSpeed: 0.45 + Math.random() * 0.35,
+        levAmp: 0.16 + Math.random() * 0.14,
+        swaySpeed: 0.35 + Math.random() * 0.25,
+        swayAmp: 0.42 + Math.random() * 0.18
+      };
 
-    const chance = Math.random();
-    const color = chance < 0.22 ? coolParticle : chance < 0.36 ? paleParticle : warmParticle;
-    particleColors[i * 3] = color.r;
-    particleColors[i * 3 + 1] = color.g;
-    particleColors[i * 3 + 2] = color.b;
-  }
+      group.add(mesh);
+      cards.push(mesh);
+    });
+  });
 
-  const particleGeometry = new THREE.BufferGeometry();
-  particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-  particleGeometry.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
-
-  const particles = new THREE.Points(
-    particleGeometry,
-    new THREE.PointsMaterial({
-      vertexColors: true,
-      color: 0xffffff,
-      size: 0.035,
-      transparent: true,
-      opacity: 0.55,
-      depthWrite: false,
-      sizeAttenuation: true
-    })
-  );
-  scene.add(particles);
-
-  /* ---------- lights ---------- */
-
-  scene.add(new THREE.HemisphereLight(0xfff8ee, 0x3a2a20, 0.6));
-
-  const keyLight = new THREE.DirectionalLight(0xffffff, 0.85);
-  keyLight.position.set(5, 6, 6);
-  scene.add(keyLight);
-
-  const rimLight = new THREE.PointLight(0xb05639, 0.7, 26);
-  rimLight.position.set(-5, 1.5, 2);
-  scene.add(rimLight);
-
-  const tealLight = new THREE.PointLight(0x2a4c3c, 0.8, 30);
-  tealLight.position.set(4.6, -2.8, -3.8);
-  scene.add(tealLight);
-
-  const fillLight = new THREE.PointLight(0xf4e7d5, 0.4, 26);
-  fillLight.position.set(5, -4, 5);
-  scene.add(fillLight);
-
-  /* ---------- layout / scroll ---------- */
+  /* ---------- layout / interaction ---------- */
 
   let scrollTarget = 0;
   let scrollSmooth = 0;
@@ -273,38 +115,33 @@
   let pointerY = 0;
   let smoothX = 0;
   let smoothY = 0;
-  let idle = 0;
   let running = false;
   let rafId = 0;
 
   const clock = new THREE.Clock();
 
   function baseX() {
-    if (window.innerWidth < 760) return 2.0;
-    if (window.innerWidth < 981) return 1.2;
-    if (window.innerWidth < 1200) return 3.3;
-    return 3.0;
-  }
-
-  function baseScale() {
-    if (window.innerWidth < 760) return 0.65;
-    if (window.innerWidth < 981) return 0.62;
-    if (window.innerWidth < 1200) return 0.7;
-    return 0.8;
+    if (window.innerWidth < 760) return 1.7;
+    if (window.innerWidth < 1200) return 3.0;
+    return 3.1;
   }
 
   function baseY() {
-    if (window.innerWidth < 760) return 2.4;
-    if (window.innerWidth < 981) return 1.15;
-    if (window.innerWidth < 1200) return 0.25;
+    if (window.innerWidth < 760) return 1.0;
+    if (window.innerWidth < 1200) return 0.15;
     return 0;
   }
 
+  function baseScale() {
+    if (window.innerWidth < 760) return 0.62;
+    if (window.innerWidth < 1200) return 0.78;
+    return 0.92;
+  }
+
   function baseCameraZ() {
-    if (window.innerWidth < 760) return 13.5;
-    if (window.innerWidth < 981) return 13.5;
-    if (window.innerWidth < 1200) return 12.5;
-    return 9.6;
+    if (window.innerWidth < 760) return 14.5;
+    if (window.innerWidth < 1200) return 13.2;
+    return 12;
   }
 
   function updateScroll() {
@@ -334,46 +171,30 @@
     smoothX += (pointerX - smoothX) * 0.05;
     smoothY += (pointerY - smoothY) * 0.05;
 
-    if (!reduceMotion) {
-      idle += dt * 0.16;
-    }
+    group.position.x = baseX() - scrollSmooth * 0.45 + (reduceMotion ? 0 : smoothX * 0.18);
+    group.position.y = baseY() - scrollSmooth * 1.15 + (reduceMotion ? 0 : smoothY * 0.12);
+    group.scale.setScalar(baseScale());
 
-    const scrollAmount = reduceMotion ? scrollSmooth * Math.PI * 1.2 : scrollSmooth * Math.PI * 2.2;
-
-    group.rotation.y = scrollAmount + idle + smoothX * (reduceMotion ? 0 : 0.16);
-    group.rotation.x = Math.sin(scrollSmooth * Math.PI) * 0.42 + smoothY * (reduceMotion ? 0 : 0.1);
-    group.rotation.z = Math.sin(scrollSmooth * Math.PI * 2) * 0.1;
-    group.position.x = baseX() - scrollSmooth * 0.35;
-    group.position.y = baseY() - scrollSmooth * 1.05 + (reduceMotion ? 0 : Math.sin(t * 0.6) * 0.045);
-
-    const s = baseScale();
-    group.scale.setScalar(s);
-
-    camera.position.z = baseCameraZ() + scrollSmooth * 1.0;
+    camera.position.z = baseCameraZ() + scrollSmooth * 1.1;
     camera.lookAt(0, 0, 0);
 
-    knot.rotation.z += dt * 0.06;
-    knot.rotation.x = Math.sin(t * 0.35) * 0.08;
-    core.rotation.y -= dt * 0.25;
-    shell.rotation.y = -scrollSmooth * Math.PI * 0.8;
-    shell.rotation.x = scrollSmooth * 0.6;
-    orbitRing.rotation.z += dt * 0.08;
-    orbitRing2.rotation.z -= dt * 0.05;
+    for (let i = 0; i < cards.length; i++) {
+      const card = cards[i];
+      const u = card.userData;
 
-    for (let i = 0; i < shards.length; i++) {
-      const shard = shards[i];
-      const data = shard.userData;
-      data.angle += dt * data.speed;
-      shard.position.x = Math.cos(data.angle) * data.radius;
-      shard.position.z = Math.sin(data.angle) * data.radius;
-      shard.position.y = data.baseY + Math.sin(t * 0.7 + i) * 0.16;
-      shard.rotation.x += dt * data.spinX;
-      shard.rotation.y += dt * data.spinY;
-    }
+      if (!reduceMotion) {
+        u.angle += dt * u.orbitSpeed;
+      }
 
-    if (!reduceMotion) {
-      particles.rotation.y = t * 0.012;
-      particles.rotation.x = Math.sin(t * 0.1) * 0.05;
+      card.position.x = Math.cos(u.angle) * u.radius;
+      card.position.z = Math.sin(u.angle) * u.radius * 0.55;
+      card.position.y = u.baseY + (reduceMotion ? 0 : Math.sin(t * u.levSpeed + u.phase) * u.levAmp);
+
+      /* face the camera, then add a gentle side-to-side sway */
+      card.lookAt(camera.position);
+      if (!reduceMotion) {
+        card.rotateY(Math.sin(t * u.swaySpeed + u.phase) * u.swayAmp);
+      }
     }
 
     renderer.render(scene, camera);
@@ -401,11 +222,8 @@
   }
 
   document.addEventListener('visibilitychange', function () {
-    if (document.hidden) {
-      stop();
-    } else {
-      start();
-    }
+    if (document.hidden) stop();
+    else start();
   });
 
   if (!reduceMotion && window.matchMedia('(pointer: fine)').matches) {
@@ -418,7 +236,6 @@
   reduceQuery.addEventListener('change', function (event) {
     reduceMotion = event.matches;
     if (reduceMotion) {
-      idle = 0;
       smoothX = 0;
       smoothY = 0;
     }
@@ -431,11 +248,10 @@
   updateScroll();
   renderFrame();
 
-  // let the canvas fade in after the first successful frame
+  /* fade the canvas in once the first frame has been drawn */
   window.requestAnimationFrame(function () {
     document.body.classList.add('scene-ready');
   });
 
   start();
 })();
-
