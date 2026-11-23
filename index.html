@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Сайт-презентация о 3D-графике: полигоны, этапы производства, рендеринг и интерактивная демонстрация. Разработчик — Арсений Соколов. Выполнили — Соколов А.Е. и Румянцев Г.А.">
+  <meta name="author" content="Соколов А.Е., Румянцев Г.А.">
+  <meta name="theme-color" content="#ff6a1a">
+  <title>3D-графика — Мир из полигонов | Арсений Соколов</title>
+  <script>
+    document.documentElement.classList.add('js');
+    window.setTimeout(function () {
+      if (document.body) document.body.classList.add('is-loaded');
+    }, 1200);
+  </script>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="fonts/fonts.css" as="style">
+  <link rel="stylesheet" href="fonts/fonts.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/editorial.css">
+  <link rel="stylesheet" href="css/site-ui.css">
+</head>
+<body>
+  <div class="preloader" id="preloader" aria-hidden="true">
+    <div class="preloader-inner">
+      <div class="preloader-brand">
+        <span class="preloader-mark">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 21 7.6v8.8L12 21.2 3 16.4V7.6l9-4.8Z"/><path d="m3 7.6 9 4.9 9-4.9M12 12.5v8.7"/></svg>
+        </span>
+        <span class="preloader-name">POLY<span>.</span></span>
+      </div>
+      <div class="preloader-track" aria-hidden="true"><span id="preloader-bar"></span></div>
+      <div class="preloader-meta"><span>Собираем сцену</span><span id="preloader-percent">0%</span></div>
+    </div>
+  </div>
+  <noscript><style>.preloader { display: none !important; }</style></noscript>
+
+  <a class="skip-link" href="#main">Перейти к содержимому</a>
+
+  <svg class="svg-sprite" aria-hidden="true" width="0" height="0">
+    <symbol id="i-cube" viewBox="0 0 24 24">
+      <path d="M12 2.8 21 7.6v8.8L12 21.2 3 16.4V7.6l9-4.8Z"/>
+      <path d="m3 7.6 9 4.9 9-4.9M12 12.5v8.7"/>
+    </symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M4 12h16M13 5l7 7-7 7"/></symbol>
+    <symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 4v16M5 13l7 7 7-7"/></symbol>
+    <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 20V4M5 11l7-7 7 7"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2.5"/><path d="M8 10V7.5a4 4 0 0 1 8 0V10"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 8h16M4 16h16"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-vertex" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="7" opacity=".35"/></symbol>
+    <symbol id="i-triangle" viewBox="0 0 24 24"><path d="M12 3.5 21 20H3L12 3.5Z"/><circle cx="12" cy="3.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="21" cy="20" r="1.3" fill="currentColor" stroke="none"/><circle cx="3" cy="20" r="1.3" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-shader" viewBox="0 0 24 24"><path d="m9 8-4 4 4 4M15 8l4 4-4 4"/><path d="m13 5-2 14"/></symbol>
+    <symbol id="i-pencil" viewBox="0 0 24 24"><path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z"/><path d="m13.5 7.5 3 3"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="8.5" cy="9" r="1.6"/><path d="m4 17 5-4 4 3 3-2 4 3"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5-11-6.5Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="3"/><circle cx="12" cy="13.5" r="3.5"/><path d="M8 7l1.5-2h5L16 7"/></symbol>
+    <symbol id="i-cursor" viewBox="0 0 24 24"><path d="m6 3 12 8-5.2 1.2L10 18 6 3Z"/><path d="m13 14 4.5 7"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 2.5c.8 5.2 3.8 8.2 9 9-5.2.8-8.2 3.8-9 9-.8-5.2-3.8-8.2-9-9 5.2-.8 8.2-3.8 9-9Z"/></symbol>
+    <symbol id="i-gpu" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></symbol>
+    <symbol id="i-neural" viewBox="0 0 24 24"><circle cx="5" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="m7 7 3.5 3.5M7 17l3.5-3.5M14 10.5 17 7M14 13.5l3 3.5"/></symbol>
+    <symbol id="i-rays" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l2.8 2.8M16.2 16.2 19 19M19 5l-2.8 2.8M7.8 16.2 5 19"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-2.9-5.6 2.9 1.1-6.2L3 9.6l6.2-.9L12 3Z"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></symbol>
+    <symbol id="i-qr" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="7" height="7" rx="1.4"/>
+      <rect x="14" y="3" width="7" height="7" rx="1.4"/>
+      <rect x="3" y="14" width="7" height="7" rx="1.4"/>
+      <path d="M14 14h3v3h-3zM20 14v.01M14 20v.01M18 18h3v3h-3z"/>
+    </symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24">
+      <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/>
+      <circle cx="12" cy="12" r="2.6"/>
+    </symbol>
+  </svg>
+
+  <div class="page-bg" aria-hidden="true"></div>
+  <canvas id="bg-canvas" aria-hidden="true"></canvas>
+  <div class="scene-glow" aria-hidden="true"></div>
+  <div class="scroll-progress" aria-hidden="true"><span id="scroll-progress-bar"></span></div>
+
+  <header class="site-header" id="top">
+    <div class="nav-shell glass">
+      <a class="brand" href="#hero" aria-label="POLY — на главную">
+        <span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#i-cube"></use></svg></span>
+        <span class="brand-text">POLY<span>.</span></span>
+      </a>
+
+      <nav class="nav-menu" id="nav-menu" aria-label="Основная навигация">
+        <a class="nav-link" href="#about">О графике</a>
+        <a class="nav-link" href="#pipeline">Пайплайн</a>
+        <a class="nav-link" href="#demo">Полигоны</a>
+        <a class="nav-link" href="#rendering">Рендеринг</a>
+        <a class="nav-link" href="#tools">Инструменты</a>
+        <a class="nav-cta" href="#game"><span class="nav-cta-dot" aria-hidden="true"></span>Мини-игра</a>
+      </nav>
+
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu" aria-label="Открыть меню">
+        <svg class="icon nav-toggle-open" aria-hidden="true"><use href="#i-menu"></use></svg>
+        <svg class="icon nav-toggle-close" aria-hidden="true"><use href="#i-close"></use></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="hero" aria-labelledby="hero-title">
+      <div class="container hero-container">
+        <div class="hero-copy" id="hero-copy">
+          <p class="eyebrow reveal" data-delay="80"><span class="eyebrow-dot" aria-hidden="true"></span>Мультимедийные технологии · проект</p>
+
+          <h1 class="hero-title" id="hero-title">
+            <span class="hero-line"><span>Мир из</span></span>
+            <span class="hero-line"><span class="accent">полигонов</span></span>
+          </h1>
+
+          <p class="hero-lead reveal" data-delay="260">3D-графика — это способ описать пространство математикой, а затем заставить свет вести себя как в реальности. Разбираем путь от первой вершины до кадра, которому веришь.</p>
+
+          <div class="hero-actions reveal" data-delay="340">
+            <a class="btn btn-primary" href="#about">
+              Погрузиться
+              <svg class="icon" aria-hidden="true"><use href="#i-arrow-down"></use></svg>
+            </a>
+            <a class="btn btn-glass" href="#demo">
+              <svg class="icon" aria-hidden="true"><use href="#i-cube"></use></svg>
+              Полигоны вживую
+            </a>
+          </div>
+
+          <div class="hero-credit reveal" data-delay="420">
+            <div class="hero-credit-item">
+              <span class="hero-credit-label">Разработчик</span>
+              <strong>Арсений Соколов</strong>
+            </div>
+            <span class="hero-credit-sep" aria-hidden="true"></span>
+            <div class="hero-credit-item">
+              <span class="hero-credit-label">Выполнили</span>
+              <span>Соколов А.Е. и Румянцев Г.А.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-stats">
+          <div class="stat glass reveal" data-delay="200">
+            <span class="stat-value" data-count="3">3</span>
+            <span class="stat-label">измерения — основа любой сцены</span>
+          </div>
+          <div class="stat glass reveal" data-delay="280">
+            <span class="stat-value" data-count="60">60</span>
+            <span class="stat-label">кадров в секунду — стандарт real-time</span>
+          </div>
+          <div class="stat glass reveal" data-delay="360">
+            <span class="stat-value" data-count="6">6</span>
+            <span class="stat-label">этапов от идеи до финального кадра</span>
+          </div>
+        </div>
+
+        <p class="hero-visits" data-visit-counter hidden aria-live="polite">
+          <svg class="icon" aria-hidden="true"><use href="#i-eye"></use></svg>
+          <span>Уже <strong data-visit-count>0</strong> <span data-visit-label>посетителей</span></span>
+        </p>
+      </div>
+
+      <div class="scroll-hint" aria-hidden="true">
+        <span>листай</span>
+        <i></i>
+      </div>
+    </section>
+
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span>Моделирование</span><i>/</i>
+        <span>Текстуры</span><i>/</i>
+        <span>Шейдеры</span><i>/</i>
+        <span>Свет</span><i>/</i>
+        <span>Анимация</span><i>/</i>
+        <span>Рендеринг</span><i>/</i>
+        <span>WebGL</span><i>/</i>
+        <span>GPU</span><i>/</i>
+      </div>
+    </div>
+
+    <section class="section about" id="about" aria-labelledby="about-title">
+      <div class="container">
+        <div class="about-grid">
+          <div class="about-main">
+            <p class="section-label reveal"><span>01</span>Основа</p>
+            <h2 class="section-title reveal" id="about-title" data-delay="60">Сцена,<br>а не картинка</h2>
+            <p class="section-lead reveal" data-delay="120">Каждый 3D-объект — это набор вершин в пространстве и правила, по которым они соединяются. Полигоны создают форму, материалы — поверхность, свет — объём. Вместе получается иллюзия, которую мозг принимает за реальность.</p>
+
+            <div class="quote-card reveal" data-delay="160">
+              <span class="quote-label">Цена кадра</span>
+              <div class="quote-value">16<span>ms</span></div>
+              <p>Столько времени есть у GPU, чтобы удержать 60 кадров в секунду. Внутри — миллионы полигонов, текстур и лучей.</p>
+              <span class="quote-rings" aria-hidden="true"></span>
+            </div>
+          </div>
+
+          <div class="about-cards">
+            <article class="info-card glass reveal">
+              <div class="info-icon"><svg class="icon" aria-hidden="true"><use href="#i-vertex"></use></svg></div>
+              <div class="info-body">
+                <div class="info-head"><h3>Вершина</h3><span>Vertex</span></div>
+                <p>Точка с координатами X, Y, Z. Вершины задают углы поверхности и служат каркасом для всей модели.</p>
+              </div>
+              <span class="card-num" aria-hidden="true">01</span>
+            </article>
+
+            <article class="info-card glass reveal" data-delay="80">
+              <div class="info-icon"><svg class="icon" aria-hidden="true"><use href="#i-triangle"></use></svg></div>
+              <div class="info-body">
+                <div class="info-head"><h3>Полигон</h3><span>Polygon</span></div>
+                <p>Треугольник из трёх вершин. Тысячи таких треугольников складываются в силуэт — от простого куба до персонажа.</p>
+              </div>
+              <span class="card-num" aria-hidden="true">02</span>
+            </article>
+
+            <article class="info-card glass reveal" data-delay="160">
+              <div class="info-icon"><svg class="icon" aria-hidden="true"><use href="#i-shader"></use></svg></div>
+              <div class="info-body">
+                <div class="info-head"><h3>Шейдер</h3><span>Shader</span></div>
+                <p>Программа для GPU. Она вычисляет, как материал отражает свет: блеск металла, шероховатость дерева, прозрачность стекла.</p>
+              </div>
+              <span class="card-num" aria-hidden="true">03</span>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section pipeline" id="pipeline" aria-labelledby="pipeline-title">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="section-label reveal"><span>02</span>Пайплайн</p>
+            <h2 class="section-title reveal" id="pipeline-title" data-delay="60">Путь одного кадра</h2>
+          </div>
+          <p class="section-lead reveal" data-delay="120">Производство 3D — это конвейер. Каждый этап опирается на предыдущий, а финальный кадр собирает всё вместе.</p>
+        </div>
+
+        <div class="steps">
+          <article class="step glass reveal">
+            <span class="step-num" aria-hidden="true">01</span>
+            <div class="step-icon"><svg class="icon" aria-hidden="true"><use href="#i-pencil"></use></svg></div>
+            <h3>Идея и блокинг</h3>
+            <p>Скетчи, референсы и серая болванка сцены: композиция, масштаб, ритм.</p>
+            <span class="tag">Pre-production</span>
+          </article>
+
+          <article class="step glass reveal" data-delay="70">
+            <span class="step-num" aria-hidden="true">02</span>
+            <div class="step-icon"><svg class="icon" aria-hidden="true"><use href="#i-cube"></use></svg></div>
+            <h3>Моделирование</h3>
+            <p>Из примитивов рождается геометрия: персонажи, предметы и окружение.</p>
+            <span class="tag">Modeling</span>
+          </article>
+
+          <article class="step glass reveal" data-delay="140">
+            <span class="step-num" aria-hidden="true">03</span>
+            <div class="step-icon"><svg class="icon" aria-hidden="true"><use href="#i-image"></use></svg></div>
+            <h3>Текстурирование</h3>
+            <p>PBR-материалы задают цвет, шероховатость, металл и микрорельеф.</p>
+            <span class="tag">Texturing</span>
+          </article>
+
+          <article class="step glass reveal">
+            <span class="step-num" aria-hidden="true">04</span>
+            <div class="step-icon"><svg class="icon" aria-hidden="true"><use href="#i-play"></use></svg></div>
+            <h3>Риггинг и анимация</h3>
+            <p>Скелет, веса и ключевые кадры превращают статичную модель в движение.</p>
+            <span class="tag">Animation</span>
+          </article>
+
+          <article class="step glass reveal" data-delay="70">
+            <span class="step-num" aria-hidden="true">05</span>
+            <div class="step-icon"><svg class="icon" aria-hidden="true"><use href="#i-sun"></use></svg></div>
+            <h3>Свет и камера</h3>
+            <p>Свет ставит акценты, камера выбирает ракурс — сцена обретает настроение.</p>
+            <span class="tag">Lighting</span>
+          </article>
+
+          <article class="step step-accent reveal" data-delay="140">
+            <span class="step-num" aria-hidden="true">06</span>
+            <div class="step-icon"><svg class="icon" aria-hidden="true"><use href="#i-camera"></use></svg></div>
+            <h3>Рендеринг</h3>
+            <p>GPU просчитывает тени, отражения и материалы. Получается финальное изображение.</p>
+            <span class="tag">Rendering</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section demo" id="demo" aria-labelledby="demo-title">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="section-label reveal"><span>03</span>Интерактив</p>
+            <h2 class="section-title reveal" id="demo-title" data-delay="60">Полигоны вживую</h2>
+          </div>
+          <p class="section-lead reveal" data-delay="120">Чем выше детализация, тем плавнее форма — и тем дороже кадр. Переключай режимы и смотри на разницу.</p>
+        </div>
+
+        <div class="demo-shell glass reveal">
+          <div class="demo-copy">
+            <h3>Живая сетка</h3>
+            <p>Одна сфера — три уровня детализации. Сравни силуэт, количество треугольников и стоимость рендера.</p>
+
+            <div class="control-group">
+              <span class="control-label">Детализация</span>
+              <div class="segmented" role="group" aria-label="Детализация модели">
+                <button class="seg-btn" type="button" data-detail="0" aria-pressed="false">Низкая</button>
+                <button class="seg-btn is-active" type="button" data-detail="2" aria-pressed="true">Средняя</button>
+                <button class="seg-btn" type="button" data-detail="4" aria-pressed="false">Высокая</button>
+              </div>
+            </div>
+
+            <label class="switch-row" for="wireframe-toggle">
+              <span>Показать сетку</span>
+              <span class="switch">
+                <input type="checkbox" id="wireframe-toggle">
+                <span class="switch-track" aria-hidden="true"></span>
+              </span>
+            </label>
+
+            <div class="metrics" aria-live="polite">
+              <div class="metric">
+                <span class="metric-value" id="metric-vertices">162</span>
+                <span class="metric-label">вершины</span>
+              </div>
+              <div class="metric">
+                <span class="metric-value" id="metric-faces">320</span>
+                <span class="metric-label">треугольники</span>
+              </div>
+              <div class="metric">
+                <span class="metric-value metric-cost" id="metric-cost">Средняя</span>
+                <span class="metric-label">стоимость</span>
+              </div>
+            </div>
+
+            <p class="demo-hint"><svg class="icon" aria-hidden="true"><use href="#i-cursor"></use></svg>Потяни модель, чтобы повернуть</p>
+          </div>
+
+          <div class="demo-stage">
+            <span class="stage-badge">WebGL · real-time</span>
+            <canvas id="demo-canvas" tabindex="0" role="img" aria-label="Интерактивная 3D-модель. Перетаскивайте мышью или используйте стрелки, чтобы повернуть."></canvas>
+            <span class="stage-hint" aria-hidden="true">drag to rotate</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section rendering" id="rendering" aria-labelledby="rendering-title">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="section-label reveal"><span>04</span>Свет</p>
+            <h2 class="section-title reveal" id="rendering-title" data-delay="60">Два способа<br>увидеть мир</h2>
+          </div>
+          <p class="section-lead reveal" data-delay="120">Изображение можно собрать быстро и приблизительно или медленно и физически точно. В играх и кино эти подходы часто работают вместе.</p>
+        </div>
+
+        <div class="render-grid">
+          <article class="render-card glass reveal">
+            <div class="render-visual">
+              <span class="visual-tag">Real-time</span>
+              <span class="visual-grid" aria-hidden="true"></span>
+              <svg class="render-art" viewBox="0 0 400 220" aria-hidden="true">
+                <g class="raster-tris">
+                  <path d="M200 34 326 178H74L200 34Z" fill="rgba(255,106,26,.16)" stroke="#ff8a3d" stroke-width="1.2"/>
+                  <path d="M200 34 200 178H74L200 34Z" fill="rgba(255,106,26,.2)" stroke="rgba(255,180,130,.55)" stroke-width="1"/>
+                  <path d="M200 34 326 178H200V34Z" fill="rgba(255,255,255,.05)" stroke="rgba(255,180,130,.4)" stroke-width="1"/>
+                  <path d="M137 106h126M106 142h188M168 70h64M168 70v108M232 70v108" stroke="rgba(255,255,255,.13)" stroke-width=".8"/>
+                </g>
+                <g fill="#ffb27a" opacity=".9">
+                  <rect x="188" y="150" width="6" height="6"/><rect x="196" y="150" width="6" height="6"/>
+                  <rect x="204" y="150" width="6" height="6"/><rect x="212" y="158" width="6" height="6"/>
+                  <rect x="188" y="158" width="6" height="6"/><rect x="220" y="158" width="6" height="6"/>
+                </g>
+                <circle cx="200" cy="34" r="4" fill="#fff"/><circle cx="326" cy="178" r="4" fill="#ff6a1a"/><circle cx="74" cy="178" r="4" fill="#ff6a1a"/>
+              </svg>
+              <span class="scanline" aria-hidden="true"></span>
+            </div>
+            <div class="render-body">
+              <h3>Растеризация</h3>
+              <p>Треугольники проецируются на экран и закрашиваются пикселями. Предсказуемо, быстро и идеально для интерактивных сцен.</p>
+              <div class="render-stats">
+                <span><strong>60–240</strong> FPS</span>
+                <span><strong>≈16</strong> мс на кадр</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="render-card glass reveal" data-delay="100">
+            <div class="render-visual">
+              <span class="visual-tag">Cinema</span>
+              <span class="visual-grid" aria-hidden="true"></span>
+              <svg class="render-art" viewBox="0 0 400 220" aria-hidden="true">
+                <circle cx="300" cy="112" r="58" fill="url(#sphereGrad)" stroke="rgba(255,180,130,.55)" stroke-width="1.2"/>
+                <defs>
+                  <radialGradient id="sphereGrad" cx="35%" cy="30%" r="75%">
+                    <stop offset="0%" stop-color="#ffe0cb"/>
+                    <stop offset="35%" stop-color="#ff9a50"/>
+                    <stop offset="100%" stop-color="#8f3300"/>
+                  </radialGradient>
+                </defs>
+                <g class="ray-paths" fill="none" stroke="#ffb27a" stroke-width="1.4">
+                  <path d="M70 112 242 112"/>
+                  <path d="M70 112 358 72"/>
+                  <path d="M70 112 356 154"/>
+                  <path d="M70 112 244 86"/>
+                  <path d="M244 86 190 44"/>
+                </g>
+                <g fill="#ffb27a">
+                  <circle cx="70" cy="112" r="5"/>
+                  <circle cx="244" cy="86" r="3"/>
+                  <circle cx="190" cy="44" r="3"/>
+                </g>
+                <g fill="rgba(255,255,255,.55)">
+                  <circle cx="330" cy="92" r="2.5"/><circle cx="278" cy="138" r="2"/><circle cx="352" cy="132" r="1.8"/>
+                </g>
+                <path d="M42 96h28v32H42z" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.4" rx="2"/>
+              </svg>
+            </div>
+            <div class="render-body">
+              <h3>Трассировка лучей</h3>
+              <p>Лучи выходят из камеры, отражаются и преломляются, находя источник света. Отражения и тени получаются физически честными.</p>
+              <div class="render-stats">
+                <span><strong>Часы</strong> на кадр</span>
+                <span><strong>Кино</strong> качество</span>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <article class="pbr-card glass reveal">
+          <div class="pbr-copy">
+            <span class="tag">PBR</span>
+            <h3>Материалы, которые подчиняются физике</h3>
+            <p>Physically Based Rendering описывает поверхность набором параметров: цвет, металличность, шероховатость, нормали. Один и тот же материал корректно выглядит при любом освещении.</p>
+            <div class="chips">
+              <span>Base Color</span>
+              <span>Metalness</span>
+              <span>Roughness</span>
+              <span>Normal</span>
+              <span>AO</span>
+            </div>
+          </div>
+          <div class="spheres" aria-hidden="true">
+            <div class="sphere-item"><span class="sphere sphere-matte"></span><span class="sphere-label">Matte</span></div>
+            <div class="sphere-item"><span class="sphere sphere-glossy"></span><span class="sphere-label">Glossy</span></div>
+            <div class="sphere-item"><span class="sphere sphere-metal"></span><span class="sphere-label">Metal</span></div>
+            <div class="sphere-item"><span class="sphere sphere-rough"></span><span class="sphere-label">Rough</span></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section tools" id="tools" aria-labelledby="tools-title">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="section-label section-label--teal reveal"><span>05</span>Инструменты</p>
+            <h2 class="section-title reveal" id="tools-title" data-delay="60">Чем это делают</h2>
+          </div>
+          <p class="section-lead reveal" data-delay="120">От open-source-редакторов до игровых движков и браузерных библиотек. У каждого инструмента своя зона силы.</p>
+        </div>
+
+        <div class="tools-grid">
+          <a class="tool-card glass reveal" href="tool-blender.html">
+            <div class="tool-top"><span class="tool-mark"><img src="assets/tools/blender.svg" alt="" width="28" height="28" loading="lazy"></span><span class="tool-index" aria-hidden="true">01</span></div>
+            <h3>Blender</h3>
+            <p>Open-source-стандарт: моделирование, анимация, симуляции и рендер Cycles.</p>
+            <div class="chips"><span>Modeling</span><span>Cycles</span></div>
+            <span class="tool-more">Подробнее <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg></span>
+          </a>
+
+          <a class="tool-card glass reveal" data-delay="60" href="tool-unreal.html">
+            <div class="tool-top"><span class="tool-mark"><img src="assets/tools/unrealengine.svg" alt="" width="28" height="28" loading="lazy"></span><span class="tool-index" aria-hidden="true">02</span></div>
+            <h3>Unreal Engine 5</h3>
+            <p>Real-time графика уровня AAA: Nanite для геометрии, Lumen для света.</p>
+            <div class="chips"><span>Games</span><span>Real-time</span></div>
+            <span class="tool-more">Подробнее <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg></span>
+          </a>
+
+          <a class="tool-card glass reveal" data-delay="120" href="tool-unity.html">
+            <div class="tool-top"><span class="tool-mark"><img src="assets/tools/unity.svg" alt="" width="28" height="28" loading="lazy"></span><span class="tool-index" aria-hidden="true">03</span></div>
+            <h3>Unity</h3>
+            <p>Кроссплатформенные игры, интерактивные приложения и XR-проекты.</p>
+            <div class="chips"><span>Games</span><span>XR</span></div>
+            <span class="tool-more">Подробнее <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg></span>
+          </a>
+
+          <a class="tool-card glass reveal" href="tool-cinema4d.html">
+            <div class="tool-top"><span class="tool-mark"><img src="assets/tools/cinema4d.svg" alt="" width="28" height="28" loading="lazy"></span><span class="tool-index" aria-hidden="true">04</span></div>
+            <h3>Cinema 4D</h3>
+            <p>Быстрый моушн-дизайн, реклама и продуктовые визуализации.</p>
+            <div class="chips"><span>Motion</span><span>Design</span></div>
+            <span class="tool-more">Подробнее <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg></span>
+          </a>
+
+          <a class="tool-card glass reveal" data-delay="60" href="tool-houdini.html">
+            <div class="tool-top"><span class="tool-mark"><img src="assets/tools/houdini.svg" alt="" width="28" height="28" loading="lazy"></span><span class="tool-index" aria-hidden="true">05</span></div>
+            <h3>Houdini</h3>
+            <p>Процедурная геометрия, разрушения и VFX для большого кино.</p>
+            <div class="chips"><span>VFX</span><span>Procedural</span></div>
+            <span class="tool-more">Подробнее <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg></span>
+          </a>
+
+          <a class="tool-card glass reveal" data-delay="120" href="tool-threejs.html">
+            <div class="tool-top"><span class="tool-mark"><img src="assets/tools/threedotjs.svg" alt="" width="28" height="28" loading="lazy"></span><span class="tool-index" aria-hidden="true">06</span></div>
+            <h3>Three.js</h3>
+            <p>3D прямо в браузере: WebGL и WebGPU без плагинов. На нём собран этот сайт.</p>
+            <div class="chips"><span>Web</span><span>WebGL</span></div>
+            <span class="tool-more">Подробнее <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg></span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section future" id="future" aria-labelledby="future-title">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="section-label reveal"><span>06</span>Дальше</p>
+            <h2 class="section-title reveal" id="future-title" data-delay="60">Куда движется 3D</h2>
+          </div>
+          <p class="section-lead reveal" data-delay="120">Графика становится быстрее, честнее и всё чаще рождается не из полигонов, а из нейросетей.</p>
+        </div>
+
+        <div class="future-grid">
+          <article class="future-card glass reveal">
+            <div class="future-icon"><svg class="icon" aria-hidden="true"><use href="#i-gpu"></use></svg></div>
+            <h3>WebGPU</h3>
+            <p>Новый графический API браузеров: меньше накладных расходов и больше контроля над GPU.</p>
+          </article>
+
+          <article class="future-card glass reveal" data-delay="70">
+            <div class="future-icon"><svg class="icon" aria-hidden="true"><use href="#i-neural"></use></svg></div>
+            <h3>Neural rendering</h3>
+            <p>NeRF и Gaussian Splatting собирают объёмную сцену из фотографий с помощью нейросетей.</p>
+          </article>
+
+          <article class="future-card glass reveal" data-delay="140">
+            <div class="future-icon"><svg class="icon" aria-hidden="true"><use href="#i-rays"></use></svg></div>
+            <h3>Real-time path tracing</h3>
+            <p>Честные отражения и глобальное освещение становятся интерактивными — киношный свет в реальном времени.</p>
+          </article>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="section game" id="game" aria-labelledby="game-title">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="section-label reveal"><span>07</span>Мини-игра</p>
+            <h2 class="section-title reveal" id="game-title" data-delay="60">Свет в кадре</h2>
+          </div>
+          <p class="section-lead reveal" data-delay="120">Почувствуй себя постановщиком света. Настрой источник так, чтобы живая сцена совпала с эталонным кадром, — и сними свой дубль.</p>
+        </div>
+
+        <div class="game-shell glass reveal" id="light-game">
+          <div class="game-panel">
+            <div class="game-topline">
+              <span class="game-level-chip"><span class="pulse" aria-hidden="true"></span>Уровень <strong id="game-level">01</strong> / 03</span>
+              <span class="game-record">
+                <svg class="icon" aria-hidden="true"><use href="#i-star"></use></svg>
+                <span id="game-record">Рекорд · —</span>
+              </span>
+            </div>
+
+            <div class="game-progress" id="game-progress" aria-hidden="true">
+              <span class="game-progress-seg is-active"></span>
+              <span class="game-progress-seg"></span>
+              <span class="game-progress-seg"></span>
+            </div>
+
+            <h3 class="game-title">Поймай свет</h3>
+            <p class="game-sub">Сравнивай блики и тени. Двигай источник по сцене и настраивай его характер.</p>
+
+            <div class="game-reference">
+              <div class="ref-frame">
+                <canvas id="game-reference-canvas" role="img" aria-label="Эталонный кадр с целевым освещением"></canvas>
+                <span class="ref-tag"><i aria-hidden="true"></i>Эталон</span>
+                <span class="ref-index">REF · <span id="game-ref-index">01</span></span>
+              </div>
+              <div class="ref-caption">
+                <div class="ref-copy">
+                  <strong id="game-ref-title">Тёплый ключевой</strong>
+                  <span>Повтори направление, яркость и температуру</span>
+                </div>
+                <div class="ref-legend" aria-hidden="true">
+                  <span><i class="legend-dir"></i>направление</span>
+                  <span><i class="legend-bright"></i>яркость</span>
+                  <span><i class="legend-warm"></i>теплота</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="game-controls">
+              <div class="range-row">
+                <div class="range-head">
+                  <label for="game-brightness">Яркость</label>
+                  <output id="game-brightness-out" for="game-brightness">55%</output>
+                </div>
+                <input class="range" id="game-brightness" type="range" min="0" max="100" step="1" value="55" aria-describedby="game-controls-hint">
+              </div>
+              <div class="range-row">
+                <div class="range-head">
+                  <label for="game-warmth">Теплота</label>
+                  <output id="game-warmth-out" for="game-warmth">50%</output>
+                </div>
+                <input class="range range-warmth" id="game-warmth" type="range" min="0" max="100" step="1" value="50" aria-describedby="game-controls-hint">
+                <div class="range-scale" aria-hidden="true"><span>холодный</span><span>тёплый</span></div>
+              </div>
+            </div>
+
+            <div class="game-actions">
+              <button class="btn btn-primary" id="game-shoot" type="button">
+                <svg class="icon" aria-hidden="true"><use href="#i-camera"></use></svg>
+                Снять кадр
+              </button>
+              <button class="game-reset" id="game-reset" type="button" title="Сбросить свет" aria-label="Сбросить настройки света">
+                <svg class="icon" aria-hidden="true"><use href="#i-refresh"></use></svg>
+              </button>
+            </div>
+
+            <p class="game-hint" id="game-controls-hint">
+              <svg class="icon" aria-hidden="true"><use href="#i-cursor"></use></svg>
+              Тяни сцену, чтобы двигать свет · стрелки тоже работают
+            </p>
+          </div>
+
+          <div class="game-stage" id="game-stage">
+            <canvas id="game-canvas" tabindex="0" role="application" aria-label="Сцена со светом. Перетаскивайте мышью или используйте стрелки, чтобы двигать источник света."></canvas>
+
+            <div class="game-stage-top">
+              <span class="live-chip" id="game-live"><i aria-hidden="true"></i><span id="game-live-label">LIVE</span></span>
+              <span class="stage-spec">ISO 100 · f/2.8 · 1/125</span>
+            </div>
+
+            <div class="game-grid" aria-hidden="true"></div>
+            <span class="vf vf-tl" aria-hidden="true"></span>
+            <span class="vf vf-tr" aria-hidden="true"></span>
+            <span class="vf vf-bl" aria-hidden="true"></span>
+            <span class="vf vf-br" aria-hidden="true"></span>
+
+            <span class="stage-light-hint" aria-hidden="true">
+              <svg class="icon"><use href="#i-cursor"></use></svg>
+              двигай свет
+            </span>
+
+            <div class="game-flash" aria-hidden="true"></div>
+
+            <div class="game-result" id="game-result" hidden>
+              <div class="result-card" aria-live="polite">
+                <span class="result-eyebrow" id="game-result-kicker">Кадр проявлен</span>
+                <div class="result-stars" id="game-result-stars" aria-hidden="true"></div>
+                <div class="result-score"><strong id="game-result-score">0</strong><span>% совпадения</span></div>
+                <p class="result-text" id="game-result-text"></p>
+                <ul class="result-hints" id="game-result-hints"></ul>
+                <div class="result-actions">
+                  <button class="btn btn-primary" id="game-result-primary" type="button">
+                    <span id="game-result-primary-label">Дальше</span>
+                    <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg>
+                  </button>
+                  <button class="result-retry" id="game-result-retry" type="button" hidden>Ещё дубль</button>
+                </div>
+                <span class="result-total" id="game-result-total"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer" id="author">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <a class="brand brand-footer" href="#hero" aria-label="POLY — наверх">
+            <span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#i-cube"></use></svg></span>
+            <span class="brand-text">POLY<span>.</span></span>
+          </a>
+          <p>Сайт-презентация о 3D-графике: от вершины и полигона до света и финального рендера.</p>
+        </div>
+
+        <nav class="footer-nav" aria-label="Навигация в подвале">
+          <a href="#about">О графике</a>
+          <a href="#pipeline">Пайплайн</a>
+          <a href="#demo">Полигоны</a>
+          <a href="#rendering">Рендеринг</a>
+          <a href="#tools">Инструменты</a>
+          <a href="#game">Мини-игра</a>
+        </nav>
+
+        <div class="author-card glass-dark">
+          <span class="author-avatar">АС</span>
+          <div class="author-info">
+            <span class="author-label">Разработчик</span>
+            <strong>Арсений Соколов</strong>
+            <span class="author-credits">Выполнили: Соколов А.Е. и Румянцев Г.А.</span>
+            <span class="author-disc">Мультимедийные технологии · 2026</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© 2026 · Соколов А.Е. и Румянцев Г.А.</span>
+        <span>Сделано на Three.js и чистом CSS</span>
+        <a class="footer-qr" id="footer-qr" href="qr.html" target="_blank" rel="noopener" title="Открыть экран с QR-кодом для гостей" hidden>
+          <svg class="icon" aria-hidden="true"><use href="#i-qr"></use></svg>
+          QR для гостей
+        </a>
+        <a class="footer-up" href="#hero">Наверх <svg class="icon" aria-hidden="true"><use href="#i-arrow-up"></use></svg></a>
+      </div>
+    </div>
+  </footer>
+
+  <button class="to-top" id="to-top" type="button" aria-label="Вернуться наверх">
+    <svg class="icon" aria-hidden="true"><use href="#i-arrow-up"></use></svg>
+  </button>
+
+  <dialog class="card-dialog" id="card-dialog" aria-labelledby="card-dialog-title">
+    <div class="card-dialog-inner">
+      <button class="card-dialog-close" type="button" data-card-close aria-label="Закрыть">
+        <svg class="icon" aria-hidden="true"><use href="#i-close"></use></svg>
+      </button>
+      <div class="card-dialog-head">
+        <span class="card-dialog-icon" id="card-dialog-icon" aria-hidden="true">
+          <svg class="icon"><use href="#i-cube"></use></svg>
+        </span>
+        <div>
+          <span class="card-dialog-kicker" id="card-dialog-kicker"></span>
+          <h2 class="card-dialog-title" id="card-dialog-title"></h2>
+        </div>
+      </div>
+      <div class="card-dialog-body" id="card-dialog-body"></div>
+      <div class="card-dialog-foot">
+        <span class="card-dialog-hint">Можно закрыть клавишей Esc</span>
+        <button class="btn btn-primary card-dialog-ok" type="button" data-card-close>Понятно</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="vendor/three.min.js"></script>
+  <script src="js/scene.js"></script>
+  <script src="js/demo.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/visits.js"></script>
+  <script src="js/site-ui.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/cards.js"></script>
+  <script src="js/cursor.js"></script>
+</body>
+</html>

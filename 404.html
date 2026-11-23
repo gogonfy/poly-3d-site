@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#f4efe6">
+  <title>404 — сцена не найдена | POLY</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="fonts/fonts.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/editorial.css">
+  <style>
+    .error-header {
+      position: relative;
+      z-index: 2;
+      padding: 28px 0;
+    }
+
+    .error-main {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      min-height: calc(100svh - 120px);
+      padding: 40px 0 90px;
+    }
+
+    .error-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 22px;
+      color: var(--orange-deep);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .error-kicker::before {
+      content: "";
+      width: 28px;
+      height: 1px;
+      background: var(--brass);
+    }
+
+    .error-title {
+      max-width: 780px;
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(3rem, 8vw, 7rem);
+      font-weight: 600;
+      line-height: 0.94;
+      letter-spacing: -0.055em;
+      color: var(--ink);
+    }
+
+    .error-title span {
+      color: var(--orange);
+    }
+
+    .error-lead {
+      max-width: 450px;
+      margin-top: 24px;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+
+    .error-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 30px;
+    }
+
+    .error-footer {
+      position: relative;
+      z-index: 2;
+      padding: 0 0 28px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .error-actions {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .error-actions .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-bg" aria-hidden="true"></div>
+
+  <header class="error-header">
+    <div class="container">
+      <a class="brand" href="index.html" aria-label="POLY — на главную">
+        <span class="brand-mark" aria-hidden="true">
+          <svg class="icon"><use href="#i-cube"></use></svg>
+        </span>
+        <span class="brand-text">POLY<span>.</span></span>
+      </a>
+    </div>
+  </header>
+
+  <main class="error-main">
+    <div class="container">
+      <p class="error-kicker">Ошибка 404</p>
+      <h1 class="error-title">Такой сцены<br><span>здесь нет</span></h1>
+      <p class="error-lead">Похоже, кадр потерялся при рендере. Вернитесь на главную или откройте раздел с инструментами — там всё на месте.</p>
+      <div class="error-actions">
+        <a class="btn btn-primary" href="index.html">
+          На главную
+          <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg>
+        </a>
+        <a class="btn btn-glass" href="index.html#tools">К инструментам</a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="error-footer">
+    <div class="container">© 2026 · Соколов А.Е. и Румянцев Г.А.</div>
+  </footer>
+
+  <svg class="svg-sprite" aria-hidden="true" width="0" height="0">
+    <symbol id="i-cube" viewBox="0 0 24 24">
+      <path d="M12 2.8 21 7.6v8.8L12 21.2 3 16.4V7.6l9-4.8Z"/>
+      <path d="m3 7.6 9 4.9 9-4.9M12 12.5v8.7"/>
+    </symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M4 12h16M13 5l7 7-7 7"/></symbol>
+  </svg>
+
+  <script src="js/cursor.js"></script>
+</body>
+</html>

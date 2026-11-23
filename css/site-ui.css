@@ -1,0 +1,310 @@
+/* =========================================================
+   POLY — site chrome: preloader, section rail, page veil
+   ========================================================= */
+
+body.preloading {
+  overflow: hidden;
+}
+
+/* ---------- preloader ---------- */
+
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--paper, #f4efe6);
+  transition: opacity 520ms ease, visibility 0s linear 520ms;
+}
+
+.preloader.is-done {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.preloader-inner {
+  width: min(300px, 82vw);
+}
+
+.preloader-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 26px;
+}
+
+.preloader-mark {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  color: #fff;
+  background: var(--teal-deep, #1c372b);
+  box-shadow: 0 12px 24px -14px rgba(28, 55, 43, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.preloader-mark::after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--paper, #f4efe6);
+  border-radius: 50%;
+  background: var(--orange, #b05639);
+}
+
+.preloader-mark svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.preloader-name {
+  font-family: var(--font-display, 'Unbounded', Arial, sans-serif);
+  font-size: 23px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--ink, #1b1814);
+}
+
+.preloader-name span {
+  color: var(--orange, #b05639);
+}
+
+.preloader-track {
+  height: 2px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(27, 24, 20, 0.11);
+}
+
+.preloader-track span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--teal-deep, #1c372b);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 120ms linear;
+}
+
+.preloader-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 11px;
+  color: var(--muted, #756a5c);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.preloader-meta strong,
+.preloader-meta span:last-child {
+  color: var(--orange-deep, #8a3d27);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preloader {
+    transition-duration: 1ms;
+  }
+
+  .preloader-track span {
+    transition: none;
+  }
+}
+
+/* ---------- section rail ---------- */
+
+.section-rail {
+  position: fixed;
+  top: 50%;
+  right: 22px;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 11px;
+  transform: translateY(-50%);
+}
+
+.section-rail a {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--muted, #756a5c);
+  text-decoration: none;
+}
+
+.rail-label {
+  padding: 5px 8px;
+  border: 1px solid rgba(255, 252, 247, 0.9);
+  border-radius: 999px;
+  background: rgba(255, 252, 247, 0.78);
+  color: var(--ink-soft, #3d362c);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(6px);
+  transition: opacity 180ms ease, transform 180ms var(--ease-out, ease);
+}
+
+.rail-num {
+  font-family: var(--font-display, 'Unbounded', Arial, sans-serif);
+  font-size: 8px;
+  color: rgba(27, 24, 20, 0.3);
+  font-variant-numeric: tabular-nums;
+  transition: color 180ms ease;
+}
+
+.rail-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(27, 24, 20, 0.2);
+  transition: background-color 180ms ease, box-shadow 180ms ease;
+}
+
+.section-rail a:hover .rail-label,
+.section-rail a.is-active .rail-label {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.section-rail a:hover .rail-dot {
+  background: var(--teal, #2a4c3c);
+}
+
+.section-rail a.is-active .rail-dot {
+  background: var(--orange, #b05639);
+  box-shadow: 0 0 0 4px rgba(176, 86, 57, 0.1);
+}
+
+.section-rail a.is-active .rail-num {
+  color: var(--orange-deep, #8a3d27);
+}
+
+@media (max-width: 1199px) {
+  .section-rail {
+    display: none;
+  }
+}
+
+@media print {
+  .section-rail,
+  .page-veil,
+  .preloader {
+    display: none !important;
+  }
+}
+
+/* ---------- page transition veil ---------- */
+
+.page-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 450;
+  display: grid;
+  place-items: center;
+  background: var(--teal-deep, #1c372b);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 280ms ease, visibility 0s linear 280ms;
+}
+
+.page-veil.is-active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 280ms ease;
+}
+
+.veil-lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  color: #fffdf8;
+}
+
+.veil-mark {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255, 252, 247, 0.24);
+  border-radius: 14px;
+  color: var(--orange, #b05639);
+}
+
+.veil-mark svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.veil-name {
+  font-family: var(--font-display, 'Unbounded', Arial, sans-serif);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.veil-name span {
+  color: var(--orange-soft, #d49a83);
+}
+
+.veil-line {
+  width: 86px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--brass-soft, #d3b98f), transparent);
+  animation: veilLine 900ms ease-in-out infinite;
+}
+
+@keyframes veilLine {
+  0%, 100% { transform: scaleX(0.3); opacity: 0.35; }
+  50% { transform: scaleX(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-veil {
+    transition-duration: 1ms;
+  }
+}
+
+/* ---------- magnetic buttons ---------- */
+
+.magnetic {
+  transition: translate 180ms var(--ease-out, ease);
+  will-change: translate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .magnetic {
+    transition: none;
+  }
+}

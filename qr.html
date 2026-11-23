@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>QR для гостей — POLY</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="fonts/fonts.css">
+  <style>
+    :root {
+      --ink: #1b1814;
+      --ink-soft: #3d362c;
+      --muted: #756a5c;
+      --paper: #f4efe6;
+      --orange: #b05639;
+      --orange-deep: #8a3d27;
+      --orange-soft: #d49a83;
+      --teal: #2a4c3c;
+      --teal-deep: #1c372b;
+      --teal-soft: #93ab9b;
+      --brass: #a67c47;
+      --brass-soft: #d3b98f;
+      --font-display: 'Unbounded', 'Segoe UI', Arial, sans-serif;
+      --font-body: 'Manrope', 'Segoe UI', Arial, sans-serif;
+      --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      min-height: 100svh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 30px 20px;
+      overflow-x: hidden;
+      font-family: var(--font-body);
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 65% 55% at 50% -4%, rgba(166, 124, 71, 0.13), transparent 70%),
+        radial-gradient(circle at 92% 88%, rgba(42, 76, 60, 0.07), transparent 40%),
+        linear-gradient(180deg, #f8f4ec 0%, #f4efe6 58%, #ece4d7 100%);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(27, 24, 20, 0.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(27, 24, 20, 0.028) 1px, transparent 1px);
+      background-size: 88px 88px;
+      -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, #000 8%, transparent 75%);
+      mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, #000 8%, transparent 75%);
+      pointer-events: none;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+      opacity: 0.28;
+      mix-blend-mode: multiply;
+      pointer-events: none;
+    }
+
+    .qr-topline {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--teal-deep);
+      z-index: 3;
+    }
+
+    .qr-page {
+      position: relative;
+      z-index: 2;
+      width: min(620px, 100%);
+      margin: auto;
+    }
+
+    .qr-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .qr-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 19px;
+      letter-spacing: 0.015em;
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .qr-mark {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      color: #fff;
+      background: var(--teal-deep);
+      box-shadow: 0 10px 20px -12px rgba(28, 55, 43, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    }
+
+    .qr-mark::after {
+      content: "";
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      width: 8px;
+      height: 8px;
+      border: 2px solid var(--paper);
+      border-radius: 50%;
+      background: var(--orange);
+      box-shadow: 0 0 0 2px rgba(176, 86, 57, 0.1);
+    }
+
+    .qr-mark svg {
+      width: 19px;
+      height: 19px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .qr-brand-text span {
+      color: var(--orange);
+    }
+
+    .qr-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 11px;
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-radius: 999px;
+      background: rgba(255, 252, 247, 0.58);
+      box-shadow: inset 0 1px 0 #fff, 0 10px 24px -22px rgba(32, 27, 21, 0.26);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .qr-badge i {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--orange);
+      box-shadow: 0 0 0 3px rgba(176, 86, 57, 0.12);
+    }
+
+    .qr-fullscreen {
+      padding: 7px 11px;
+      border: 1px solid rgba(28, 18, 11, 0.1);
+      border-radius: 999px;
+      background: rgba(255, 252, 247, 0.55);
+      color: var(--ink-soft);
+      font-family: inherit;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background-color 180ms ease, color 180ms ease;
+    }
+
+    .qr-fullscreen:hover {
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .qr-fullscreen[hidden] {
+      display: none;
+    }
+
+    .qr-card {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(28px, 5vw, 46px) clamp(20px, 5vw, 46px) clamp(24px, 4vw, 34px);
+      border: 1px solid rgba(255, 255, 255, 0.96);
+      border-radius: 38px;
+      background: rgba(255, 252, 247, 0.84);
+      box-shadow:
+        0 46px 90px -56px rgba(32, 27, 21, 0.4),
+        inset 0 1px 0 #fff;
+      -webkit-backdrop-filter: blur(20px) saturate(1.2);
+      backdrop-filter: blur(20px) saturate(1.2);
+      text-align: center;
+      isolation: isolate;
+    }
+
+    .qr-card::before {
+      content: "";
+      position: absolute;
+      top: -34%;
+      left: -10%;
+      z-index: -1;
+      width: 70%;
+      height: 80%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(166, 124, 71, 0.13), transparent 68%);
+      pointer-events: none;
+    }
+
+    .qr-card::after {
+      content: "";
+      position: absolute;
+      right: -92px;
+      bottom: -108px;
+      z-index: -1;
+      width: 260px;
+      height: 260px;
+      border: 1px dashed rgba(166, 124, 71, 0.18);
+      border-radius: 50%;
+      box-shadow: 0 0 0 34px rgba(166, 124, 71, 0.022);
+      pointer-events: none;
+    }
+
+    .qr-kicker {
+      margin: 0 0 13px;
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--orange-deep);
+    }
+
+    .qr-title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5.6vw, 3rem);
+      font-weight: 600;
+      line-height: 1.02;
+      letter-spacing: -0.045em;
+      color: var(--ink);
+    }
+
+    .qr-lead {
+      max-width: 360px;
+      margin: 12px auto 0;
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--muted);
+    }
+
+    .qr-frame {
+      position: relative;
+      width: min(314px, 76vw);
+      aspect-ratio: 1;
+      margin: 26px auto 16px;
+      padding: 15px;
+      border: 1px solid rgba(28, 18, 11, 0.07);
+      border-radius: 30px;
+      background: #fffdf8;
+      box-shadow:
+        0 26px 48px -32px rgba(32, 27, 21, 0.34),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+    }
+
+    .qr-frame svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      color: var(--ink);
+    }
+
+    .qr-wait {
+      display: grid;
+      place-items: center;
+      gap: 10px;
+      height: 100%;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+
+    .qr-spinner {
+      width: 24px;
+      height: 24px;
+      border: 2px solid rgba(176, 86, 57, 0.16);
+      border-top-color: var(--orange);
+      border-radius: 50%;
+      animation: qrSpin 0.9s linear infinite;
+    }
+
+    .qr-error {
+      display: grid;
+      place-items: center;
+      height: 100%;
+      padding: 10px;
+      font-size: 12px;
+      line-height: 1.55;
+      color: var(--orange-deep);
+    }
+
+    .qr-note {
+      max-width: 340px;
+      margin: 0 auto;
+      font-size: 11.5px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .qr-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 9px;
+      margin-top: 20px;
+    }
+
+    .qr-open {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 0 20px;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--teal-deep);
+      box-shadow: 0 16px 30px -18px rgba(28, 55, 43, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+      font-size: 12px;
+      font-weight: 800;
+      text-decoration: none;
+      transition: transform 160ms var(--ease-out), box-shadow 200ms ease;
+    }
+
+    .qr-open svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .qr-open:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 20px 36px -18px rgba(28, 55, 43, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    }
+
+    .qr-open:active {
+      transform: scale(0.98);
+    }
+
+    .qr-foot {
+      max-width: 430px;
+      margin: 22px auto 0;
+      font-size: 10px;
+      line-height: 1.6;
+      text-align: center;
+      color: rgba(117, 106, 92, 0.78);
+    }
+
+    @keyframes qrSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 520px) {
+      body {
+        padding: 22px 14px;
+      }
+
+      .qr-head {
+        margin-bottom: 18px;
+      }
+
+      .qr-badge {
+        display: none;
+      }
+
+      .qr-card {
+        border-radius: 30px;
+      }
+
+      .qr-frame {
+        width: min(280px, 78vw);
+        padding: 12px;
+        border-radius: 24px;
+      }
+
+      .qr-title {
+        font-size: clamp(1.85rem, 8.6vw, 2.4rem);
+      }
+
+      .qr-lead {
+        font-size: 12.5px;
+      }
+
+      .qr-foot {
+        margin-top: 18px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .qr-spinner {
+        animation: none;
+      }
+
+      .qr-open {
+        transition: none;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="css/site-ui.css">
+</head>
+<body>
+  <span class="qr-topline" aria-hidden="true"></span>
+
+  <main class="qr-page">
+    <header class="qr-head">
+      <a class="qr-brand" href="index.html" aria-label="POLY — на главную">
+        <span class="qr-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 2.8 21 7.6v8.8L12 21.2 3 16.4V7.6l9-4.8Z"/><path d="m3 7.6 9 4.9 9-4.9M12 12.5v8.7"/></svg>
+        </span>
+        <span class="qr-brand-text">POLY<span>.</span></span>
+      </a>
+
+      <span class="qr-badge"><i aria-hidden="true"></i><span id="qr-badge-label">Локальная сеть</span></span>
+      <button class="qr-fullscreen" id="qr-fullscreen" type="button" hidden>На весь экран</button>
+    </header>
+
+    <section class="qr-card" aria-labelledby="qr-title">
+      <p class="qr-kicker">Мир из полигонов · 3D-графика</p>
+      <h1 class="qr-title" id="qr-title">Наведите камеру</h1>
+      <p class="qr-lead" id="qr-lead">Откройте сайт на телефоне за пару секунд. Интернет не нужен — только общая Wi-Fi сеть.</p>
+
+      <div class="qr-frame" id="qr-frame" role="img" aria-label="QR-код для открытия сайта на телефоне">
+        <div class="qr-wait" id="qr-wait">
+          <span class="qr-spinner" aria-hidden="true"></span>
+          <span>Готовим QR…</span>
+        </div>
+      </div>
+
+      <p class="qr-note" id="qr-note">Наведите камеру iPhone или Android — сайт откроется в браузере автоматически.</p>
+
+      <div class="qr-actions">
+        <a class="qr-open" href="index.html">
+          Открыть сайт
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16M13 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </section>
+
+    <p class="qr-foot" id="qr-foot">Если камера не срабатывает, проверьте, что телефон подключён к той же Wi-Fi сети, и попробуйте ещё раз.</p>
+  </main>
+
+  <script src="js/site-ui.js"></script>
+  <script src="js/cursor.js"></script>
+  <script src="vendor/qrcode.js"></script>
+  <script src="js/qr.js"></script>
+</body>
+</html>
+
