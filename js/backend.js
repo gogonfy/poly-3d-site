@@ -1,12 +1,12 @@
 /* =========================================================
-   POLY — статус сайта, онлайн, статистика и учёт покупок
+   POLY — статистика сайта и учёт покупок
    Данные хранятся в Firebase Realtime Database:
    stats/visits — уникальные браузеры всего,
    stats/daily/{дата} — уникальные браузеры за день,
    stats/peak/{дата} — пиковый онлайн за день,
    presence — активные вкладки прямо сейчас,
    status — статус сайта, purchases — клики «Купить».
-   Без настроек (js/config.js) блок показывает демо-режим.
+   Без настроек (js/config.js) окно показывает демо-режим.
    ========================================================= */
 
 (function () {
@@ -14,8 +14,8 @@
 
   const config = window.POLY_CONFIG || {};
   const fbConfig = config.firebase || {};
-  const bar = document.getElementById('status-bar');
   const dialog = document.getElementById('stats-dialog');
+  const openButtons = document.querySelectorAll('[data-open-stats]');
   const isWeb = window.location.protocol === 'http:' || window.location.protocol === 'https:';
 
   const isConfigured = Boolean(fbConfig.databaseURL) &&
@@ -28,8 +28,6 @@
     link.setAttribute('rel', 'noopener');
   });
 
-  if (!bar) return;
-
   const STATES = {
     ok: { label: 'Сайт работает', tone: 'ok' },
     maintenance: { label: 'Технические работы', tone: 'warn' },
@@ -39,29 +37,26 @@
   };
 
   const DAYS = 14;
-  const els = {
-    state: bar.querySelector('[data-status-state]'),
-    online: bar.querySelector('[data-status-online]'),
-    visits: bar.querySelector('[data-status-visits]'),
-    open: bar.querySelector('[data-open-stats]'),
-    dState: dialog ? dialog.querySelector('[data-dialog-state]') : null,
-    dOnline: dialog ? dialog.querySelector('[data-dialog-online]') : null,
-    dVisits: dialog ? dialog.querySelector('[data-dialog-visits]') : null,
-    dPeak: dialog ? dialog.querySelector('[data-dialog-peak]') : null,
-    dNote: dialog ? dialog.querySelector('[data-dialog-note]') : null,
-    dUpdated: dialog ? dialog.querySelector('[data-dialog-updated]') : null,
-    chart: dialog ? dialog.querySelector('[data-chart]') : null
-  };
+  const els = dialog ? {
+    state: dialog.querySelector('[data-dialog-state]'),
+    online: dialog.querySelector('[data-dialog-online]'),
+    visits: dialog.querySelector('[data-dialog-visits]'),
+    peak: dialog.querySelector('[data-dialog-peak]'),
+    note: dialog.querySelector('[data-dialog-note]'),
+    updated: dialog.querySelector('[data-dialog-updated]'),
+    chart: dialog.querySelector('[data-chart]')
+  } : null;
 
   const state = {
+    mode: 'demo',
     status: { key: config.status || 'ok', note: config.statusNote || '' },
     online: null,
     visits: null,
     peakToday: null,
-    daily: null,
-    mode: 'demo'
+    daily: null
   };
   let lastPeakSent = 0;
+  let db = null;
 
   function pad(n) {
     return n < 10 ? '0' + n : String(n);
@@ -75,8 +70,7 @@
     const out = [];
     const now = new Date();
     for (let i = count - 1; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
-      out.push(dayKey(d));
+      out.push(dayKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() - i)));
     }
     return out;
   }
@@ -92,33 +86,25 @@
     return { label: state.status.note || info.label, tone: info.tone };
   }
 
-  function renderBar() {
+  function renderDialog() {
+    if (!els) return;
     const info = stateInfo();
-    bar.dataset.tone = info.tone;
     els.state.textContent = info.label;
+    els.state.dataset.tone = info.tone;
     els.online.textContent = fmt(state.online);
     els.visits.textContent = fmt(state.visits);
-  }
-
-  function renderDialog() {
-    if (!dialog) return;
-    const info = stateInfo();
-    els.dState.textContent = info.label;
-    els.dState.dataset.tone = info.tone;
-    els.dOnline.textContent = fmt(state.online);
-    els.dVisits.textContent = fmt(state.visits);
-    els.dPeak.textContent = fmt(state.peakToday);
+    els.peak.textContent = fmt(state.peakToday);
 
     if (state.mode === 'demo') {
-      els.dNote.textContent = 'Демо-режим: чтобы видеть реальную статистику, заполните блок firebase в js/config.js.';
+      els.note.textContent = 'Демо-режим: чтобы видеть реальную статистику, заполните блок firebase в js/config.js.';
     } else if (state.mode === 'offline') {
-      els.dNote.textContent = 'Страница открыта как файл. Статистика доступна при запуске через start-server.bat или на сайте.';
+      els.note.textContent = 'Страница открыта как файл. Статистика доступна при запуске через start-server.bat или на сайте.';
     } else {
-      els.dNote.textContent = 'Посетитель считается один раз в браузере. Пик онлайна — максимум одновременно открытых вкладок за день.';
+      els.note.textContent = 'Посетитель считается один раз в браузере. Пик онлайна — максимум одновременно открытых вкладок за день.';
     }
 
     const now = new Date();
-    els.dUpdated.textContent = 'Обновлено ' + pad(now.getHours()) + ':' + pad(now.getMinutes());
+    els.updated.textContent = 'Обновлено ' + pad(now.getHours()) + ':' + pad(now.getMinutes());
 
     renderChart();
   }
@@ -132,7 +118,7 @@
   }
 
   function renderChart() {
-    if (!els.chart) return;
+    if (!els) return;
     const W = 640;
     const H = 230;
     const left = 40;
@@ -179,10 +165,10 @@
       const x = left + index * slot + (slot - barW) / 2;
       const y = top + innerH - h;
       const isToday = key === today;
+      const parts = key.split('-');
 
       const group = svgEl('g', { class: 'chart-bar' + (isToday ? ' is-today' : '') });
       const title = svgEl('title', {});
-      const parts = key.split('-');
       title.textContent = parts[2] + '.' + parts[1] + ': ' + value;
       group.appendChild(title);
 
@@ -229,6 +215,19 @@
     els.chart.scrollLeft = els.chart.scrollWidth;
   }
 
+  function loadDaily() {
+    if (!db) {
+      renderChart();
+      return;
+    }
+    db.ref('stats/daily').limitToLast(DAYS).once('value').then(function (snap) {
+      state.daily = snap.val() || {};
+      renderChart();
+    }).catch(function () {
+      renderChart();
+    });
+  }
+
   function openStats() {
     if (!dialog || dialog.open) return;
     if (typeof dialog.showModal === 'function') dialog.showModal();
@@ -244,7 +243,9 @@
   }
 
   if (dialog) {
-    els.open.addEventListener('click', openStats);
+    Array.prototype.forEach.call(openButtons, function (btn) {
+      btn.addEventListener('click', openStats);
+    });
     Array.prototype.forEach.call(dialog.querySelectorAll('[data-stats-close]'), function (btn) {
       btn.addEventListener('click', closeStats);
     });
@@ -254,38 +255,23 @@
     dialog.addEventListener('close', function () {
       document.body.classList.remove('dialog-open');
     });
-  } else if (els.open) {
-    els.open.hidden = true;
-  }
-
-  let db = null;
-
-  function loadDaily() {
-    if (!db) {
-      renderChart();
-      return;
-    }
-    db.ref('stats/daily').limitToLast(DAYS).once('value').then(function (snap) {
-      state.daily = snap.val() || {};
-      renderChart();
-    }).catch(function () {
-      renderChart();
+  } else {
+    Array.prototype.forEach.call(openButtons, function (btn) {
+      btn.hidden = true;
     });
   }
 
   function updatePeak(count) {
     if (!db) return;
-    const today = dayKey(new Date());
     if (count <= (state.peakToday || 0) || count <= lastPeakSent) return;
     lastPeakSent = count;
-    db.ref('stats/peak/' + today).transaction(function (current) {
+    db.ref('stats/peak/' + dayKey(new Date())).transaction(function (current) {
       return Math.max(current || 0, count);
     });
   }
 
   if (!isConfigured || !isWeb) {
     state.mode = isWeb ? 'demo' : 'offline';
-    renderBar();
     renderDialog();
     return;
   }
@@ -308,7 +294,6 @@
     const value = snap.val() || {};
     if (STATES[value.state]) state.status.key = value.state;
     state.status.note = value.note || config.statusNote || '';
-    renderBar();
     renderDialog();
   });
 
@@ -334,7 +319,6 @@
 
   db.ref('stats/visits').on('value', function (snap) {
     state.visits = snap.val() || 0;
-    renderBar();
     renderDialog();
   });
 
@@ -355,11 +339,9 @@
 
   db.ref('presence').on('value', function (snap) {
     state.online = snap.numChildren();
-    renderBar();
     renderDialog();
     updatePeak(state.online);
   });
 
-  renderBar();
   renderDialog();
 })();

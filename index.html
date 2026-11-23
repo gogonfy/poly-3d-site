@@ -82,21 +82,6 @@
   <div class="scene-glow" aria-hidden="true"></div>
   <div class="scroll-progress" aria-hidden="true"><span id="scroll-progress-bar"></span></div>
 
-  <div class="status-bar" id="status-bar" data-tone="demo" role="status" aria-live="polite">
-    <div class="container status-inner">
-      <span class="status-item status-state">
-        <i class="status-dot" data-status-dot aria-hidden="true"></i>
-        <span data-status-state>Демо-режим</span>
-      </span>
-      <span class="status-item" data-status-online-item>Онлайн сейчас <strong data-status-online>—</strong></span>
-      <span class="status-item">Посещений <strong data-status-visits>—</strong></span>
-      <button class="status-stats-btn" type="button" data-open-stats aria-haspopup="dialog" aria-controls="stats-dialog">
-        <svg class="icon" aria-hidden="true"><use href="#i-bars"></use></svg>
-        <span class="status-stats-label">Статистика</span>
-      </button>
-    </div>
-  </div>
-
   <header class="site-header" id="top">
     <div class="nav-shell glass">
       <a class="brand" href="#hero" aria-label="POLY — на главную">
@@ -111,6 +96,10 @@
         <a class="nav-link" href="#rendering">Рендеринг</a>
         <a class="nav-link" href="#tools">Инструменты</a>
         <a class="nav-link" href="#courses">Курсы</a>
+        <button class="nav-link nav-stats" type="button" data-open-stats aria-haspopup="dialog" aria-controls="stats-dialog">
+          <svg class="icon" aria-hidden="true"><use href="#i-bars"></use></svg>
+          Статистика
+        </button>
         <a class="nav-cta" href="#game"><span class="nav-cta-dot" aria-hidden="true"></span>Мини-игра</a>
       </nav>
 
