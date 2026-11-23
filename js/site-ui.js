@@ -21,7 +21,7 @@
     let loaded = document.readyState === 'complete';
     let done = false;
     const start = performance.now();
-    const minimum = reduceMotion ? 80 : 820;
+    const minimum = reduceMotion ? 80 : 680;
 
     function setProgress(value) {
       const clamped = Math.max(0, Math.min(100, value));
@@ -68,7 +68,7 @@
     window.setTimeout(function () {
       loaded = true;
       finish();
-    }, 4300);
+    }, 2400);
 
     window.requestAnimationFrame(frame);
   }

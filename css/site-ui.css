@@ -2,6 +2,11 @@
    POLY — site chrome: preloader, section rail, page veil
    ========================================================= */
 
+html {
+  overflow-x: hidden;
+  overflow-x: clip;
+}
+
 body.preloading {
   overflow: hidden;
 }
