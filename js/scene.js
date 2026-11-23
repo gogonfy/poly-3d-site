@@ -388,12 +388,12 @@
   /* ---------- build extruded logos ---------- */
 
   const CONFIG = {
-    'Blender':    { size: 1.95, radius: 1.35, baseY: 1.0,  phase: 0.0 },
-    'Houdini':    { size: 1.35, radius: 2.1,  baseY: 0.4,  phase: 1.05 },
-    'Cinema 4D':  { size: 1.25, radius: 1.85, baseY: -1.0, phase: 2.1 },
-    'Three.js':   { size: 1.15, radius: 1.5,  baseY: -1.45, phase: 3.15 },
-    'Unity':      { size: 1.3,  radius: 2.4,  baseY: -0.35, phase: 4.2 },
-    'Unreal':     { size: 1.4,  radius: 1.2,  baseY: 1.75, phase: 5.25 }
+    'Blender':    { size: 2.6,  radius: 2.0,  baseY: 1.1,  phase: 0.0 },
+    'Houdini':    { size: 1.8,  radius: 2.9,  baseY: 0.5,  phase: 1.05 },
+    'Cinema 4D':  { size: 1.65, radius: 2.55, baseY: -1.1, phase: 2.1 },
+    'Three.js':   { size: 1.5,  radius: 2.15, baseY: -1.6, phase: 3.15 },
+    'Unity':      { size: 1.7,  radius: 3.3,  baseY: -0.4, phase: 4.2 },
+    'Unreal':     { size: 1.85, radius: 1.65, baseY: 1.95, phase: 5.25 }
   };
 
   const DEPTH_WORLD = 0.32;
@@ -515,9 +515,9 @@
   const clock = new THREE.Clock();
 
   function baseX() {
-    if (window.innerWidth < 760) return 1.6;
-    if (window.innerWidth < 1200) return 2.9;
-    return 3.1;
+    if (window.innerWidth < 760) return 1.4;
+    if (window.innerWidth < 1200) return 3.1;
+    return 3.3;
   }
   function baseY() {
     if (window.innerWidth < 760) return 0.9;
@@ -526,8 +526,8 @@
   }
   function baseScale() {
     if (window.innerWidth < 760) return 0.6;
-    if (window.innerWidth < 1200) return 0.8;
-    return 0.95;
+    if (window.innerWidth < 1200) return 0.85;
+    return 1.0;
   }
   function baseCameraZ() {
     if (window.innerWidth < 760) return 15;
@@ -559,10 +559,11 @@
     smoothX += (pointerX - smoothX) * 0.05;
     smoothY += (pointerY - smoothY) * 0.05;
 
-    group.position.x = baseX() - scrollSmooth * 0.45 + (reduceMotion ? 0 : smoothX * 0.18);
-    group.position.y = baseY() - scrollSmooth * 1.15 + (reduceMotion ? 0 : smoothY * 0.12);
+    group.position.x = baseX() - scrollSmooth * 0.45 + (reduceMotion ? 0 : smoothX * 0.42);
+    group.position.y = baseY() - scrollSmooth * 1.15 + (reduceMotion ? 0 : smoothY * 0.3);
     group.scale.setScalar(baseScale());
-    group.rotation.y = scrollSmooth * 0.35 + (reduceMotion ? 0 : smoothX * 0.06);
+    group.rotation.y = scrollSmooth * 0.35 + (reduceMotion ? 0 : smoothX * 0.12);
+    group.rotation.x = reduceMotion ? 0 : -smoothY * 0.08;
 
     camera.position.z = baseCameraZ() + scrollSmooth * 1.1;
     camera.lookAt(0, 0, 0);
@@ -575,9 +576,13 @@
         u.angle += dt * u.orbitSpeed;
       }
 
-      logo.position.x = Math.cos(u.angle) * u.radius;
-      logo.position.z = Math.sin(u.angle) * u.radius * 0.55;
-      logo.position.y = u.baseY + (reduceMotion ? 0 : Math.sin(t * u.levSpeed + u.phase) * u.levAmp);
+      const orbitX = Math.cos(u.angle) * u.radius * 0.7;
+      const orbitZ = Math.sin(u.angle) * u.radius * 0.8;
+      logo.position.x = orbitX + (reduceMotion ? 0 : smoothX * (0.1 + u.radius * 0.06));
+      logo.position.z = orbitZ;
+      logo.position.y = u.baseY
+        + (reduceMotion ? 0 : Math.sin(t * u.levSpeed + u.phase) * u.levAmp)
+        + (reduceMotion ? 0 : smoothY * (0.08 + u.radius * 0.05));
 
       if (!reduceMotion) {
         logo.rotation.y = t * u.spinSpeed;
