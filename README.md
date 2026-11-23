@@ -85,6 +85,33 @@ node server.js
 
 При открытии сайта напрямую через `file://` счётчик скрыт: без сервера сохранять статистику негде.
 
+## Настройка онлайн, статуса и курсов
+
+Все настройки лежат в `js/config.js`. Пока там заглушки, блок сверху показывает «Демо-режим».
+
+1. Ссылка на оплату: впиши адрес Boosty или Telegram в `buyUrl`.
+2. Firebase: зайди на [console.firebase.google.com](https://console.firebase.google.com), создай проект, включи **Realtime Database** (режим «test mode» или правила ниже) и скопируй значения из **Project settings → Your apps → Web app** в блок `firebase` в `js/config.js`.
+3. Правила базы для прототипа:
+
+```json
+{
+  "rules": {
+    ".read": true,
+    "presence": { ".write": true },
+    "stats": { ".write": true },
+    "purchases": { ".write": true },
+    "status": { ".write": false }
+  }
+}
+```
+
+4. Статус сайта меняется в Firebase вручную: узел `status` с полями `state` (`ok`, `maintenance`, `down`) и `note` (текст, например «Скоро добавим курс»).
+5. Заявки на курсы (клики «Купить») пишутся в узел `purchases`. Смотреть их можно в консоли Firebase.
+
+Важно: почтовых уведомлений в этой версии нет. Это прототип; для реальной оплаты нужны Boosty или платёжный сервис, а не сайт.
+
+Файлы: `js/config.js` (настройки), `js/backend.js` (статус, онлайн, посещения, учёт покупок), `vendor/firebase-*.js` (SDK, лежит локально, работает офлайн).
+
 ## Публикация на GitHub Pages
 
 Сайт полностью статический: HTML, CSS, JS, шрифты и Three.js лежат локально, поэтому его можно опубликовать на GitHub Pages без сборки.

@@ -81,6 +81,17 @@
   <div class="scene-glow" aria-hidden="true"></div>
   <div class="scroll-progress" aria-hidden="true"><span id="scroll-progress-bar"></span></div>
 
+  <div class="status-bar" id="status-bar" data-tone="demo" role="status" aria-live="polite">
+    <div class="container status-inner">
+      <span class="status-item status-state">
+        <i class="status-dot" data-status-dot aria-hidden="true"></i>
+        <span data-status-state>Демо-режим</span>
+      </span>
+      <span class="status-item">Онлайн сейчас <strong data-status-online>—</strong></span>
+      <span class="status-item">Посещений <strong data-status-visits>—</strong></span>
+    </div>
+  </div>
+
   <header class="site-header" id="top">
     <div class="nav-shell glass">
       <a class="brand" href="#hero" aria-label="POLY — на главную">
@@ -94,6 +105,7 @@
         <a class="nav-link" href="#demo">Полигоны</a>
         <a class="nav-link" href="#rendering">Рендеринг</a>
         <a class="nav-link" href="#tools">Инструменты</a>
+        <a class="nav-link" href="#courses">Курсы</a>
         <a class="nav-cta" href="#game"><span class="nav-cta-dot" aria-hidden="true"></span>Мини-игра</a>
       </nav>
 
@@ -551,6 +563,73 @@
       </div>
     </section>
 
+    <section class="section courses" id="courses" aria-labelledby="courses-title">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="section-label reveal"><span>07</span>Обучение</p>
+            <h2 class="section-title reveal" id="courses-title" data-delay="60">Курсы по 3D</h2>
+          </div>
+          <p class="section-lead reveal" data-delay="120">Практика без воды: каждый урок заканчивается готовой сценой, которую можно показать.</p>
+        </div>
+
+        <div class="course-grid">
+          <article class="course-card glass reveal">
+            <p class="course-level">Для новичков</p>
+            <h3>Blender с нуля</h3>
+            <p>Интерфейс, моделирование, свет, материалы и первый финальный рендер.</p>
+            <ul class="course-meta">
+              <li>12 уроков</li>
+              <li>≈ 8 часов</li>
+            </ul>
+            <div class="course-foot">
+              <span class="course-price">3 900 ₽</span>
+              <a class="btn btn-primary" data-buy="blender-basics" href="#courses">
+                Купить курс
+                <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg>
+              </a>
+            </div>
+          </article>
+
+          <article class="course-card glass reveal" data-delay="80">
+            <p class="course-level">Средний уровень</p>
+            <h3>Персонаж в Blender</h3>
+            <p>От блокаута и скульптинга до риггинга, позы и готовой сцены с освещением.</p>
+            <ul class="course-meta">
+              <li>18 уроков</li>
+              <li>≈ 14 часов</li>
+            </ul>
+            <div class="course-foot">
+              <span class="course-price">6 900 ₽</span>
+              <a class="btn btn-primary" data-buy="blender-character" href="#courses">
+                Купить курс
+                <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg>
+              </a>
+            </div>
+          </article>
+
+          <article class="course-card glass reveal" data-delay="160">
+            <p class="course-level">Продвинутый уровень</p>
+            <h3>Unreal Engine 5: свет и рендер</h3>
+            <p>Lumen, Nanite и кинематографичная камера: как получить картинку уровня трейлера.</p>
+            <ul class="course-meta">
+              <li>14 уроков</li>
+              <li>≈ 11 часов</li>
+            </ul>
+            <div class="course-foot">
+              <span class="course-price">7 900 ₽</span>
+              <a class="btn btn-primary" data-buy="ue5-lighting" href="#courses">
+                Купить курс
+                <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg>
+              </a>
+            </div>
+          </article>
+        </div>
+
+        <p class="course-note">Оплата проходит на внешней странице Boosty. Вопросы по курсам — в Telegram.</p>
+      </div>
+    </section>
+
     <section class="section game" id="game" aria-labelledby="game-title">
       <div class="container">
         <div class="section-head">
@@ -694,6 +773,7 @@
           <a href="#demo">Полигоны</a>
           <a href="#rendering">Рендеринг</a>
           <a href="#tools">Инструменты</a>
+          <a href="#courses">Курсы</a>
           <a href="#game">Мини-игра</a>
         </nav>
 
@@ -747,6 +827,10 @@
   </dialog>
 
   <script src="vendor/three.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="vendor/firebase-app-compat.js"></script>
+  <script src="vendor/firebase-database-compat.js"></script>
+  <script src="js/backend.js"></script>
   <script src="js/scene.js"></script>
   <script src="js/demo.js"></script>
   <script src="js/game.js"></script>
